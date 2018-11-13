@@ -13,13 +13,14 @@ npm install aro
 ```js
 // get-customer-name.js
 
-import {fn, desc, param, error, assert} from 'aro'
+import {fn, desc, param, error, assert, returns} from 'aro'
 
 export default fn (customer => {
 
     desc    ('Construct a serviceable greeting name.')
     param   (customer)(Object)
     returns (String)
+
     error   (e => log({e, customer}))
     assert  (r => first || last || (r === fallback))
 
