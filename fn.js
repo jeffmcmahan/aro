@@ -1,5 +1,6 @@
 'use strict'
 
+const assert = require('assert')
 const {isAsync} = require('./utils')
 const typeCheck = require('./type-check')
 const callStack = require('./call-stack')
@@ -15,7 +16,12 @@ module.exports = Type => fn => {
 		let returned
 		if (fn.async) {
 			returned = fn(...args) // Promise
-			returned.then(resolved => fn.type(resolved))
+			returned.then(resolved => {
+				fn.type(resolved)
+				if (fn.onReturn) {
+					assert(fn.onReturn(resolved))
+				}
+			})
 			if (fn.onError) {
 				returned.catch(err => fn.onError(err))
 			}
@@ -31,6 +37,9 @@ module.exports = Type => fn => {
 			}
 			returned = fn(...args)
 			fn.type(returned)
+			if (fn.onReturn) {
+				assert(fn.onReturn(returned))
+			}
 		}
 		callStack.pop()
 		return returned
