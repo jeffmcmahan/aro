@@ -1,0 +1,20 @@
+{
+  "name": "aro",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "eslintConfig": {
+      "env": {
+          "browser": true,
+          "node": true
+      },
+      "parserOptions": {
+        "ecmaVersion": 6
+    }
+  },
+  "scripts": {
+    "test": "node ./tests"
+  },
+  "author": "Jeff McMahan",
+  "license": "MIT"
+}
