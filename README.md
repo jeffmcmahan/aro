@@ -15,12 +15,13 @@ npm install aro
 
 import {fn, desc, param, error, assert} from 'aro'
 
-export default fn (String) (customer => {
+export default fn (customer => {
 
-    desc   ('Construct a serviceable greeting name.')
-    param  (customer)(Object)
-    error  (e => log({e, customer}))
-    assert (r => first || last || (r === fallback))
+    desc    ('Construct a serviceable greeting name.')
+    param   (customer)(Object)
+    returns (String)
+    error   (e => log({e, customer}))
+    assert  (r => first || last || (r === fallback))
 
     const fallback = 'We don\'t know your name...'
     const {first, last} = customer

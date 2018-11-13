@@ -1,14 +1,19 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, param, Any} = require('..')
+const {fn, param, returns} = require('..')
 const dict = Object.create(null)
 
 // Return type.
-success(fn (String) (() => ''))
+success(fn (() => {
+
+	returns(String)
+
+	return ''
+}))
 
 // Parameter type.
-const func = fn (Any) (foo => {
+const func = fn (foo => {
 
 	param (foo)(String)
 

@@ -1,9 +1,16 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, Void} = require('..')
+const {fn, Void, returns} = require('..')
 
-success(fn (Void) (() => {}))
+success(fn (() => {
+	returns (Void)
+}))
 
 // Void with a return value should fail.
-fail(fn (Void) (() => ''), 'Function of type Void returned a String.')
+fail(fn (() => {
+
+	returns (Void)
+
+	return ''
+}), 'Function of type Void returned a String.')

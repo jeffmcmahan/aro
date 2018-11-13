@@ -11,6 +11,7 @@ exports.note 	= noop
 exports.assert 	= f => callStack.slice(-1)[0].fn.onReturn = f
 exports.error 	= f => callStack.slice(-1)[0].fn.onError = f
 exports.param 	= val => Type => (check('param')(Type)(val), noop)
+exports.returns = Type => callStack.slice(-1)[0].fn.type = check('function')(Type)
 exports.types 	= require('./types')
 
 // Dynamically export the types at the top-level.

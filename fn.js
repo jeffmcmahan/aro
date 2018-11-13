@@ -5,10 +5,9 @@ const {isAsync} = require('./utils')
 const typeCheck = require('./type-check')
 const callStack = require('./call-stack')
 
-module.exports = Type => fn => {
+module.exports = fn => {
 
 	fn.async = isAsync(fn) 	// Explicitly declared using the "async" keyword.
-	fn.type = typeCheck('function')(Type)
 
 	// When the function is called.
 	return (...args) => {
@@ -17,7 +16,9 @@ module.exports = Type => fn => {
 		if (fn.async) {
 			returned = fn(...args) // Promise
 			returned.then(resolved => {
-				fn.type(resolved)
+				if (fn.type) {
+					(fn.type(resolved))
+				}
 				if (fn.onReturn) {
 					assert(fn.onReturn(resolved))
 				}
@@ -36,7 +37,9 @@ module.exports = Type => fn => {
 				returned = fn(...args)
 			}
 			returned = fn(...args)
-			fn.type(returned)
+			if (fn.type) {
+				(fn.type(returned))
+			}
 			if (fn.onReturn) {
 				assert(fn.onReturn(returned))
 			}

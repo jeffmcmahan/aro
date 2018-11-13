@@ -1,15 +1,16 @@
 'use strict'
 
 const {success} = require('./utils')
-const {fn, desc, param, Any} = require('..')
+const {fn, desc, param, Any, returns} = require('..')
 let func
 
 /// TYPE: Any /////////////////////////////////////////////////////////////////////////////////////
 
-func = fn (Any) (foo => {
+func = fn (foo => {
 
-	desc  ('This should always work. There are no checks.')
-	param (foo)(Any)
+	desc    ('This should always work. There are no checks.')
+	param   (foo)(Any)
+	returns (Any)
 	
 	return new Date()
 })
