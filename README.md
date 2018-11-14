@@ -68,7 +68,7 @@ export default fn (customer => {
 })
 ```
 
-The `assert` call declares a test which examines the return value of the function (`r`) and the values of the private `first` and `last` variables.
+The `assert` call declares a test which examines the return value of the function (`r`) and the values of the private `first`, `last`, and `fallback` variables.
 
 ### Handling Execptions with `error()`
 
