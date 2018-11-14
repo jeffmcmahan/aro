@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Arrow passing style is a way of programming in ES6 based on the idea that we can produce more reliable programs if we can easily document and describe behavior, check types, handle errors, and both declare and execute tests *in situ.* Some utilities for this are provided by the `aro` package:
+Arrow passing style is a way of programming in ES6 based on the idea that we can produce more reliable programs if we document behavior, check types, handle errors, and test *in situ.* Some utilities for this are provided by the `aro` package:
 
 ```sh
 npm install aro
