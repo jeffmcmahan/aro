@@ -123,3 +123,27 @@ To declare a tuple, pass an array literal to `Tuple`.
 ```js
 Tuple(String, Number, Boolean)
 ```
+
+### Reusing Types
+
+Any type can be saved and reused:
+
+```js
+const Coordinate = Tuple(Number, Number)
+
+const distance = fn ((a, b)) => {
+
+    desc    ('Get the distance between points a and b.')
+    param   (a)(Coordinate)
+    param   (b)(Coordinate)
+    returns (Number)
+
+    const [x1, y1] = a
+    const [x2, y2] = b
+
+    return Math.sqrt(
+        (x2 - x1)**2 + (y2 - y1)**2
+    )
+})
+
+```
