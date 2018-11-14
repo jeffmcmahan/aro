@@ -14,7 +14,7 @@ const fn = () => {
 		lines.forEach((line, i) => {
 			lines[i] = line.replace(remove, '')
 		})
-		src = '\t(' + lines.join('\n\t') + ')'
+		src = '\tfn (' + lines.join('\n\t') + ')'
 		return src.replace(/\t/g, '    ')
 	}
 }
