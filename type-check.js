@@ -7,8 +7,8 @@ const instanceOf = (instanceType, ofType) => {
 	if (instanceType === ofType) {
 		return true
 	}
-	if (ofType.__proto__) {
-		instanceOf(instanceType, ofType.__proto__)
+	if (instanceType.__proto__) {
+		return instanceOf(instanceType.__proto__, ofType)
 	}
 	return false
 }
