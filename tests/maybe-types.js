@@ -19,5 +19,5 @@ fail(
 		returns (Maybe(String))
 		return 0
 	}),
-	'Function of type Maybe(String) returned a Number.'
+	'Function of type Maybe(String) returned Number'
 )

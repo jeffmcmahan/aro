@@ -1,9 +1,12 @@
 'use strict'
 
-const assert = require('assert')
 const {isAsync} = require('./utils')
-const typeCheck = require('./type-check')
 const callStack = require('./call-stack')
+const assert = condition => {
+	if (!condition) {
+		throw new Error('Test failed.')
+	}
+}
 
 module.exports = fn => {
 

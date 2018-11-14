@@ -13,4 +13,4 @@ fail(fn (() => {
 	returns (Void)
 
 	return ''
-}), 'Function of type Void returned a String.')
+}), 'Function of type Void returned String')

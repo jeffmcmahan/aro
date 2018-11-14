@@ -25,7 +25,7 @@ fail(
 		returns (Tuple(String, Number))
 		return [0, '']
 	}),
-	'Function of type Tuple(String, Number) returned a [Number, String].'
+	'Function of type Tuple(String, Number) returned [Number, String]'
 )
 
 // (4) Tuple with a plain Boolean returned.
@@ -34,5 +34,5 @@ fail(
 		returns (Tuple(String, Number)) 
 		return false
 	}), 
-	'Function of type Tuple(String, Number) returned a Boolean.'
+	'Function of type Tuple(String, Number) returned Boolean'
 )

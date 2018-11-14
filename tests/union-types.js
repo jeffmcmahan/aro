@@ -26,10 +26,10 @@ success(fn(() => {
 // (3) Union with Void returned.
 fail(fn (() => {
 	returns (U(String, Number))
-}), 'Function of type U(String, Number) returned a Void.')
+}), 'Function of type U(String, Number) returned Void')
 
 // (4) Union with Boolean returned.
 fail(fn (() => {
 	returns (U(String, Number)) 
 	return false
-}), 'Function of type U(String, Number) returned a Boolean.')
+}), 'Function of type U(String, Number) returned Boolean')
