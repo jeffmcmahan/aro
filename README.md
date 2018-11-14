@@ -8,7 +8,9 @@ Arrow passing style is a way of programming in ES6 based on the idea that we can
 npm install aro
 ```
 
-### Simple Example
+### Type Checking with `param()` and `returns()`
+
+Inside of a `fn`-built function, use JsDoc-like conventions to declare and enfore function return types (with `returns(<type>)`) and parameter types (with `param(<name>)(<type>)`), as shown here:
 
 ```js
 // get-customer-name.js
@@ -50,7 +52,7 @@ TypeError: Function of type String returned Void:
     at Module.load (internal/modules/cjs/loader.js:599:32)
 ```
 
-### Test Example
+### Testing with `assert()`
 
 ```js
 import {fn, desc, param, assert, returns} from 'aro'
@@ -58,8 +60,6 @@ import {fn, desc, param, assert, returns} from 'aro'
 export default fn (customer => {
 
     desc    ('Construct a serviceable greeting name.')
-    param   (customer)(Object)
-    returns (String)
     assert  (r => first || last || (r === fallback))
 
     const fallback = 'We don\'t know your name...'
@@ -70,7 +70,7 @@ export default fn (customer => {
 
 The `assert` call declares a test which examines the return value of the function (`r`) and the values of the private `first` and `last` variables.
 
-### Error Handling Example
+### Handling Execptions with `error()`
 
 ```js
 import {fn, desc, param, error, returns} from 'aro'
@@ -78,8 +78,6 @@ import {fn, desc, param, error, returns} from 'aro'
 export default fn (customer => {
 
     desc    ('Construct a serviceable greeting name.')
-    param   (customer)(Object)
-    returns (String)
     error   (e => log({e, customer}))
 
     const fallback = 'We don\'t know your name...'
