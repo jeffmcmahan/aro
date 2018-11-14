@@ -10,7 +10,7 @@ npm install aro
 
 ### Type Checking with `param()` and `returns()`
 
-Inside of a `fn`-built function, use JsDoc-like conventions to declare and enfore function return types (with `returns(<type>)`) and parameter types (with `param(<name>)(<type>)`), as shown here:
+Use JsDoc-like conventions to declare and enfore function return types (with `returns(Type)`) and parameter types (with `param(theParam)(Type)`), as shown here:
 
 ```js
 // get-customer-name.js
@@ -29,7 +29,7 @@ export default fn (customer => {
 })
 ```
 
-When a type check fails, we see an error of the form:
+When a type check fails, error is thrown, with a message of the form:
 
 ```
 TypeError: Function of type String returned Void:
@@ -47,9 +47,7 @@ TypeError: Function of type String returned Void:
 
     at anonymous (.../foo/bar/baz/get-customer-name.js:7:2)
     at Object.<anonymous> (.../foo/bar/baz.js:32:1)
-    at Module._compile (internal/modules/cjs/loader.js:689:30)
-    at Object.Module._extensions..js (internal/modules/cjs/loader.js:700:10)
-    at Module.load (internal/modules/cjs/loader.js:599:32)
+    ...
 ```
 
 ### Testing with `assert()`
