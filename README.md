@@ -55,7 +55,7 @@ TypeError: Function of type String returned Void:
 ### Testing with `assert()`
 
 ```js
-import {fn, desc, param, assert, returns} from 'aro'
+import {fn, desc, assert} from 'aro'
 
 export default fn (customer => {
 
@@ -73,7 +73,7 @@ The `assert` call declares a test which examines the return value of the functio
 ### Handling Execptions with `error()`
 
 ```js
-import {fn, desc, param, error, returns} from 'aro'
+import {fn, desc, error} from 'aro'
 
 export default fn (customer => {
 
