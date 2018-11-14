@@ -62,7 +62,9 @@ export default fn (customer => {
     returns (String)
     assert  (r => first || last || (r === fallback))
 
-    // ...
+    const fallback = 'We don\'t know your name...'
+    const {first, last} = customer
+    return (([first, last]).filter(n => n).join(' ') || fallback)
 })
 ```
 
@@ -80,7 +82,9 @@ export default fn (customer => {
     returns (String)
     error   (e => log({e, customer}))
 
-    // ...
+    const fallback = 'We don\'t know your name...'
+    const {first, last} = customer
+    return (([first, last]).filter(n => n).join(' ') || fallback)
 })
 ```
 
