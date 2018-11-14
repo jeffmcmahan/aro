@@ -2,13 +2,16 @@
 
 const {isAsync} = require('./utils')
 const callStack = require('./call-stack')
-const assert = condition => {
+
+// Just throw if the condition is false.
+const assert = (condition => {
 	if (!condition) {
 		throw new Error('Test failed.')
+		// Todo: Need to serialize the function and create a nice message.
 	}
-}
+})
 
-module.exports = fn => {
+module.exports = (fn => {
 
 	fn.async = isAsync(fn) 	// Explicitly declared using the "async" keyword.
 
@@ -50,4 +53,4 @@ module.exports = fn => {
 		callStack.pop()
 		return returned
 	}
-}
+})
