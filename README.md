@@ -78,7 +78,7 @@ import {fn, desc, error} from 'aro'
 export default fn (customer => {
 
     desc    ('Construct a serviceable greeting name.')
-    error   (e => log({e, customer}))
+    error   (e => log({e, first, last}))
 
     const fallback = 'We don\'t know your name...'
     const {first, last} = customer
@@ -86,7 +86,7 @@ export default fn (customer => {
 })
 ```
 
-The `error` call declares an error handler, which has access to the error and to the function's scope (here it logs the `customer`). 
+The `error` call declares an error handler, which has access to the error and to the function's scope (here it simply logs the error and the private `first` and `last` variables).
 
 ### How This Is Done
 
