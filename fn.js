@@ -42,7 +42,6 @@ module.exports = (fn => {
 			} else {
 				returned = fn(...args)
 			}
-			returned = fn(...args)
 			if (fn.type) {
 				(fn.type(returned))
 			}
