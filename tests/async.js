@@ -9,7 +9,7 @@ const asyncFunc = fn (() => {
 	returns (Promise)
 
 	syncFunc()
-    return new Promise(r => setTimeout(r, 400))
+    return new Promise(r => setTimeout(r, 100))
 })
 
 const syncFunc = fn (() => {

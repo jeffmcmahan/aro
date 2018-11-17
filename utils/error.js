@@ -1,16 +1,20 @@
 'use strict'
 
 const callStack = require('../call-stack')
+const massNouns = ['void']
+const vowels = 'aeiou'
 
+// Prepends "a", "an", or nothing to a noun, as appropriate.
 const addArticle = noun => {
-	if (noun === 'Void') {
-		return noun
-	}
-	const _noun = noun.replace(/[a-z]/g, '')
-	const article = (['a,e,i,o,u']).includes(_noun[0].toLowerCase()) ? 'an' : 'a'
-	return article + ' ' + noun 
+	const _noun = noun.toLowerCase().replace(/[^a-z]/g, '')
+	return (
+			massNouns.includes(_noun) ? noun
+		:	vowels.includes(_noun[0]) ? `an ${noun}`
+		: 	`a ${noun}`
+	)
 }
 
+// Reconstructs the function's source string.
 const fn = () => {
 	let src = callStack.slice(-1)[0].fn.toString()
 	if (!src.includes('\n')) {
@@ -28,23 +32,27 @@ const fn = () => {
 	}
 }
 
-const filterStack = stack => {
-	return stack.split('\n').filter(ln => !(
-		ln.includes('/aro/fn.js') ||
-		ln.includes('/aro/utils/error.js') ||
-		ln.includes('/aro/type-check.js')
-	)).slice(1).join('\n') + '\n\n    Original Stack:\n'
-}
+// Filters irrelevant lines from the stack trace.
+const filterStack = stack => (
+	stack
+		.split('\n')
+		.slice(4)
+		.filter(ln => !ln.includes('__fn__'))
+		.join('\n') + ('\n\n    Original Stack:\n')
+)
 
+// Explains that there was an incorrect return type.
 const returnTypeMsg = (expected, provided) => {
 	provided = addArticle(provided)
 	return `Function of type ${expected} returned ${provided}:\n\n${fn()}\n`
 }
 
-const paramTypeMsg = (expected, provided) => {
-	return `A ${expected} parameter was of type ${provided} in:\n\n${fn()}\n`
-}
+// Explains that there was in incorrect parameter type.
+const paramTypeMsg = (expected, provided) => (
+	`A ${expected} parameter was of type ${provided} in:\n\n${fn()}\n`
+)
 
+// Creates an error with a helpful message and stack trace.
 module.exports = (context, expected, provided) => {
 	if (context === 'function') {
 		const msg = returnTypeMsg(expected, provided)

@@ -6,7 +6,7 @@ const noop = () => void 0
 
 // API surface
 exports.types 	= require('./types')
-exports.fn 		= require('./fn')
+exports.fn 		= require('./__fn__')
 exports.desc 	= noop
 exports.note 	= noop
 exports.assert 	= f => callStack.slice(-1)[0].fn.onReturn = f
