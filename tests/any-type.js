@@ -2,11 +2,8 @@
 
 const {success} = require('./utils')
 const {fn, desc, param, Any, returns} = require('..')
-let func
 
-/// TYPE: Any /////////////////////////////////////////////////////////////////////////////////////
-
-func = fn (foo => {
+const test1 = fn (foo => {
 
 	desc    ('This should always work. There are no checks.')
 	param   (foo)(Any)
@@ -15,7 +12,7 @@ func = fn (foo => {
 	return new Date()
 })
 
-success(func)
-success(() => func(0))
-success(() => func(true))
-success(() => func({}))
+success(test1)
+success(() => test1(0))
+success(() => test1(true))
+success(() => test1({}))

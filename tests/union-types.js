@@ -1,35 +1,48 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, U, returns} = require('..')
+const {fn, desc, U, returns} = require('..')
 
 // Cannot even declare a Union with <2 types:
 fail(U, 'A Union type must combine 2 or more types.')
 fail(() => U(String), 'A Union type must combine 2 or more types.')
 
-// (1) Union with a String returned.
-success(fn (() => {
+const test1 = fn (() => {
 
+	desc	('Union with a String returned.')
 	returns (U(String, Number))
 
 	return ''
-}))
+})
 
-// (2) Union with a Number returned.
-success(fn(() => {
+success(test1)
 
+const test2 = fn(() => {
+
+	desc	('Union with a Number returned.')
 	returns (U(String, Number)) 
 
 	return 0
-}))
+})
 
-// (3) Union with Void returned.
-fail(fn (() => {
+success(test2)
+
+const test3 = fn (() => {
+
+	desc	('Union with Void returned.')
 	returns (U(String, Number))
-}), 'Function of type U(String, Number) returned Void')
+	
+	// No return statement here.
+})
 
-// (4) Union with Boolean returned.
-fail(fn (() => {
-	returns (U(String, Number)) 
+fail(test3, 'Function of type U(String, Number) returned Void')
+
+const test4 = fn (() => {
+
+	desc	('Union with Boolean returned.')
+	returns (U(String, Number))
+
 	return false
-}), 'Function of type U(String, Number) returned Boolean')
+})
+
+fail(test4, 'Function of type U(String, Number) returned a Boolean')

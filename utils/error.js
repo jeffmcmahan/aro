@@ -2,6 +2,15 @@
 
 const callStack = require('../call-stack')
 
+const addArticle = noun => {
+	if (noun === 'Void') {
+		return noun
+	}
+	const _noun = noun.replace(/[a-z]/g, '')
+	const article = (['a,e,i,o,u']).includes(_noun[0].toLowerCase()) ? 'an' : 'a'
+	return article + ' ' + noun 
+}
+
 const fn = () => {
 	let src = callStack.slice(-1)[0].fn.toString()
 	if (!src.includes('\n')) {
@@ -28,6 +37,7 @@ const filterStack = stack => {
 }
 
 const returnTypeMsg = (expected, provided) => {
+	provided = addArticle(provided)
 	return `Function of type ${expected} returned ${provided}:\n\n${fn()}\n`
 }
 

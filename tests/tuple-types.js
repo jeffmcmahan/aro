@@ -1,38 +1,44 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, Tuple, returns} = require('..')
+const {fn, desc, Tuple, returns} = require('..')
 
-// (1) Tuple with a String array returned.
-success(fn (() => {
+const test1 = fn (() => {
 
+	desc	('Tuple with a String array returned.')
 	returns (Tuple(String))
 
 	return ['']
-}))
+})
 
-// (2) Tuple with a Number and String array returned.
-success(fn (() => {
+success(test1)
 
+const test2 = fn (() => {
+
+	desc	('Tuple with a Number and String array returned.')
 	returns (Tuple(String, Number))
 
 	return ['', 0]
-}))
+})
 
-// (3) Tuple reversed
-fail(
-	fn (() => {
-		returns (Tuple(String, Number))
-		return [0, '']
-	}),
-	'Function of type Tuple(String, Number) returned [Number, String]'
-)
+success(test2)
 
-// (4) Tuple with a plain Boolean returned.
-fail(
-	fn (() => {
-		returns (Tuple(String, Number)) 
-		return false
-	}), 
-	'Function of type Tuple(String, Number) returned Boolean'
-)
+const test3 = fn (() => {
+
+	desc	('Tuple with the types reversed.')
+	returns (Tuple(String, Number))
+
+	return [0, '']
+})
+
+fail(test3, 'Function of type Tuple(String, Number) returned a [Number, String]')
+
+const test4 = fn (() => {
+
+	desc	('Tuple with a plain Boolean returned.')
+	returns (Tuple(String, Number))
+
+	return false
+})
+
+fail(test4, 'Function of type Tuple(String, Number) returned a Boolean')

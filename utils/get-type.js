@@ -2,15 +2,9 @@
 
 const types = require('../types')
 
-module.exports = val => {
-	if (val === void 0) {
-		return types.Void
-	}
-	if (val === null) {
-		return types.Null
-	}
-	if (!val.constructor) {
-		return types.Dictionary
-	}
-	return val.constructor
-}
+module.exports = v => (
+		(v === void 0) 		? types.Void
+	: 	(v === null) 		? types.Null
+	:	(!v.constructor) 	? types.Dictionary
+	: 	(v.constructor)
+)

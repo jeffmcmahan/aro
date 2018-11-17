@@ -2,18 +2,10 @@
 
 const types = require('../types')
 
-module.exports = val => {
-	if (val === null) {
-		return 'null'
-	}
-	if (val === void 0) {
-		return 'undefined'
-	}
-	if (typeof val === 'object' && !val.constructor) {
-		return 'Dictionary'
-	}
-	if (Object.values(types).includes(val)) {
-		return val.name
-	}
-	return val.constructor.name
-}
+module.exports = v => (
+		(v === null) 								? 'null'
+	:	(v === void 0) 								? 'undefined'
+	: 	(typeof v === 'object' && !v.constructor) 	? 'Dictionary'
+	: 	(Object.values(types).includes(v)) 			? v.name
+	:	(v.constructor.name)
+)

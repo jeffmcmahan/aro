@@ -7,15 +7,16 @@ const callStack = require('./call-stack')
 const assert = (condition => {
 	if (!condition) {
 		throw new Error('Test failed.')
-		// Todo: Need to serialize the function and create a nice message.
+		// Todo: Serialize the function to create a nice message.
 	}
 })
 
 module.exports = (fn => {
 
-	fn.async = isAsync(fn) 	// Explicitly declared using the "async" keyword.
+	// Note whether it uses the "async" keyword.
+	fn.async = isAsync(fn) 	
 
-	// When the function is called.
+	// Return a new function.
 	return (...args) => {
 		callStack.push({fn, args})
 		let returned

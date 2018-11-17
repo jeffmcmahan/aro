@@ -1,16 +1,24 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, Void, returns} = require('..')
+const {fn, desc, Void, returns} = require('..')
 
-success(fn (() => {
+const test1 = fn (() => {
+
+	desc('Let implicit return produce undefined.')
 	returns (Void)
-}))
 
-// Void with a return value should fail.
-fail(fn (() => {
+	// No return statement here.
+})
 
+success(test1)
+
+const test2 = fn (() => {
+
+	desc	('Void with a return value should fail.')
 	returns (Void)
 
 	return ''
-}), 'Function of type Void returned String')
+})
+
+fail(test2, 'Function of type Void returned a String')
