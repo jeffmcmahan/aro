@@ -8,9 +8,9 @@ Arrow passing style is (my term for) a way of programming in ES6 based on the id
 npm install aro
 ```
 
-### Type Checking with `param()` and `returns()`
+### Type Checking
 
-Use JsDoc-like conventions to declare and enfore function return types (with `returns(Type)`) and parameter types (with `param(theParam)(Type)`), as shown here:
+Use JsDoc-like conventions to (optionally) declare and enforce function return types (`returns`) and parameter types (`param`), as shown here:
 
 ```js
 // get-customer-name.js
@@ -50,7 +50,7 @@ TypeError: Function of type String returned Void:
     ...
 ```
 
-### Testing with `assert()`
+### Testing
 
 ```js
 import {fn, desc, assert} from 'aro'
@@ -68,7 +68,7 @@ export default fn (customer => {
 
 The `assert` call declares a test which examines the return value of the function (`r`) and the values of the private `first`, `last`, and `fallback` variables.
 
-### Handling Execptions with `error()`
+### Handling Execptions
 
 ```js
 import {fn, desc, error} from 'aro'
