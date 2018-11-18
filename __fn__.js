@@ -18,20 +18,27 @@ module.exports = (function __fn__ (f) {
 
 	// Return a new function.
 	return (...args) => {
-		callStack.push({fn:f, args})
+		const fcall = {fn:f, args}
+		callStack.push(fcall)
 		let returned
 		if (f.async) {
 			returned = f(...args) // Promise
 			returned.then(resolved => {
+				callStack.push(fcall) // Async-ify the callStack
 				if (f.type) {
 					(f.type(resolved))
 				}
 				if (f.onReturn) {
 					assert(f.onReturn(resolved))
 				}
+				callStack.pop()
 			})
 			if (f.onError) {
-				returned.catch(err => f.onError(err))
+				returned.catch(err => {
+					callStack.push(fcall) // Async-ify the callStack
+					f.onError(err)
+					callStack.pop()
+				})
 			}
 		} else {
 			if (f.onError) {
