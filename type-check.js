@@ -47,7 +47,7 @@ module.exports = context => (expectedType = types.Void) => val => {
 		return
 	}
 
-	if (!instanceOf(providedType, expectedType)) {
+	if (!(val instanceof expectedType) && !instanceOf(providedType, expectedType)) {
 		error(context, expectedType.name, providedType.name)
 	}
 }
