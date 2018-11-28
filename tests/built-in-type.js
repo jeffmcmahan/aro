@@ -23,8 +23,8 @@ const test2 = fn (foo => {
 })
 
 success(() => test2(''))
-fail(() => test2(), 	'A String parameter was of type Void')
-fail(() => test2(null), 'A String parameter was of type Null')
+fail(() => test2(), 	'A String parameter was of type undefined')
+fail(() => test2(null), 'A String parameter was of type null')
 fail(() => test2(2), 	'A String parameter was of type Number')
 fail(() => test2(false),'A String parameter was of type Boolean')
 fail(() => test2({}), 	'A String parameter was of type Object')

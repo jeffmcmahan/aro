@@ -1,6 +1,5 @@
 'use strict'
 
-require('./print-type')
 require('./any-type')
 require('./void-type')
 require('./built-in-type')

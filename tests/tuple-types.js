@@ -31,7 +31,7 @@ const test3 = fn (() => {
 	return [0, '']
 })
 
-fail(test3, 'Function of type Tuple(String, Number) returned a [Number, String]')
+fail(test3, 'Function of type Tuple(String, Number) returned an Array')
 
 const test4 = fn (() => {
 

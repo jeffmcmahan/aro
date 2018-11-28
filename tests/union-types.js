@@ -3,10 +3,6 @@
 const {success, fail} = require('./utils')
 const {fn, desc, U, returns} = require('..')
 
-// Cannot even declare a Union with <2 types:
-fail(U, 'A Union type must combine 2 or more types.')
-fail(() => U(String), 'A Union type must combine 2 or more types.')
-
 const test1 = fn (() => {
 
 	desc	('Union with a String returned.')
@@ -35,7 +31,7 @@ const test3 = fn (() => {
 	// No return statement here.
 })
 
-fail(test3, 'Function of type U(String, Number) returned Void')
+fail(test3, 'Function of type U(String, Number) returned undefined')
 
 const test4 = fn (() => {
 

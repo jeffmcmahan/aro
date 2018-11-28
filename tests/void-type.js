@@ -5,7 +5,7 @@ const {fn, desc, Void, returns} = require('..')
 
 const test1 = fn (() => {
 
-	desc('Let implicit return produce undefined.')
+	desc	('Let implicit return produce undefined.')
 	returns (Void)
 
 	// No return statement here.

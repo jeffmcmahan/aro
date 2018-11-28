@@ -1,17 +1,19 @@
 'use strict'
 
 const callStack = require('../call-stack')
-const massNouns = ['void']
+const massNouns = ['void', 'null', 'undefined']
 const vowels = 'aeiou'
 
+const capitalize = str => str.slice(0,1).toUpperCase() + str.slice(1)
+
 // Prepends "a", "an", or nothing to a noun, as appropriate.
-const addArticle = noun => {
-	const _noun = noun.toLowerCase().replace(/[^a-z]/g, '')
-	return (
-			massNouns.includes(_noun) ? noun
-		:	vowels.includes(_noun[0]) ? `an ${noun}`
-		: 	`a ${noun}`
-	)
+const addArticle = (noun, caps = false) => {
+	const _noun = ('' + noun).toLowerCase().replace(/[^a-z]/g, '')
+	if (massNouns.includes(_noun)) {
+		return noun
+	}
+	const detPhrase = vowels.includes(_noun[0]) ? `an ${noun}` : `a ${noun}`
+	return caps ? capitalize(detPhrase) : detPhrase
 }
 
 // Reconstructs the function's source string.
@@ -33,35 +35,29 @@ const fn = () => {
 }
 
 // Filters irrelevant lines from the stack trace.
-const filterStack = stack => (
-	stack
-		.split('\n')
-		.slice(4)
-		.filter(ln => !ln.includes('__fn__'))
+const filterStack = stack => {
+	const lines = stack.split('\n')
+	return lines
+		.slice(1)
+		.filter(ln => !ln.includes('__Type'))						// param()
+		.filter(ln => !ln.includes('callStack.slice.fn.type.val')) 	// returns()
+		.filter(ln => !ln.includes('__fn__'))						// main
+		.filter(ln => !ln.includes('(internal/'))					// irrelevant
 		.join('\n') + ('\n\n    Original Stack:\n')
-)
-
-// Explains that there was an incorrect return type.
-const returnTypeMsg = (expected, provided) => {
-	provided = addArticle(provided)
-	return `Function of type ${expected} returned ${provided}:\n\n${fn()}\n`
 }
 
-// Explains that there was in incorrect parameter type.
-const paramTypeMsg = (expected, provided) => (
-	`A ${expected} parameter was of type ${provided} in:\n\n${fn()}\n`
-)
+exports.returnType = (expected, actual, err) => {
+	return (
+		`Function of type ${expected} returned ${addArticle(actual)}.\n\n` +
+		fn() + '\n\n' +
+		filterStack(err.stack || err.message)
+	)
+}
 
-// Creates an error with a helpful message and stack trace.
-module.exports = (context, expected, provided) => {
-	if (context === 'function') {
-		const msg = returnTypeMsg(expected, provided)
-		const e = new TypeError()
-		throw new TypeError(msg + '\n' + filterStack(e.stack))
-	}
-	if (context === 'param') {
-		const msg = paramTypeMsg(expected, provided)
-		const e = new TypeError()
-		throw new TypeError(msg + '\n' + filterStack(e.stack))
-	}
+exports.paramType = (expected, actual, err) => {
+	return (
+		`${addArticle(expected, true)} parameter was of type ${actual}.\n\n` +
+		fn() + '\n\n' +
+		filterStack(err.stack || err.message)
+	)
 }
