@@ -95,9 +95,10 @@ The `error` call declares an error handler, which has access to the error and to
 ### Simple Types
 
 * Any `class` or constructor function (`String`, `Date`, `YourClass`, etc.).
-* `Any` is anything (including nothing).
+* `Any` is anything (including `undefined`).
 * `Null` (regarded for sanity's sake as the type of `null`)
-* `Void` (replaces `undefined`)
+* `Undefined`
+* `Void` (`null` or `undefined`)
 * `Dictionary` is an object with no prototype (*i.e.,* `Object.create(null)`).
 
 ### Union Types
@@ -122,6 +123,25 @@ To declare a tuple, pass an array literal to `Tuple`.
 
 ```js
 Tuple(String, Number, Boolean)
+```
+
+### Generic Types
+
+To declare a generic type, use the `T` function and pass it a value:
+
+```js
+const fn (foo => {
+    // Returns a value of the same type as foo.
+    returns (T(foo))
+})
+```
+
+### Array Types
+
+To declare an array generic, use the `ArrayT` function and pass it a type. Here's a number array:
+
+```js
+ArrayT(Number)
 ```
 
 ### Reusing Types
