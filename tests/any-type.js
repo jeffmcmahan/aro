@@ -7,7 +7,7 @@ const test1 = fn (foo => {
 
 	desc    ('This should always work. There are no checks.')
 	param   (foo)(Any)
-	returns (Any)
+	returns (Any)('Does not matter')
 	
 	return new Date()
 })

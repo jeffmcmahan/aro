@@ -25,14 +25,14 @@ exports.param = val => __Type => {
 
 exports.returns = Type => {
 	callStack.slice(-1)[0].fn.type = val => {
-		if (typeCheck(val, Type)) {
-			return noop
+		if (!typeCheck(val, Type)) {
+			const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, Type)
+			throw new TypeError(
+				error.returnType(expectedTypeName, valueTypeName, new Error())
+			)
 		}
-		const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, Type)
-		throw new TypeError(
-			error.returnType(expectedTypeName, valueTypeName, new Error())
-		)
 	}
+	return noop
 }
 
 // Dynamically export the types at the top-level.
