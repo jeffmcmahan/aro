@@ -22,24 +22,29 @@ module.exports = (function __fn__ (f) {
 		callStack.push(fcall)
 		let returned
 		if (f.async) {
-			returned = f(...args) // Promise
-			returned.then(resolved => {
-				callStack.push(fcall) // Async-ify the callStack
-				if (f.type) {
-					(f.type(resolved))
-				}
-				if (f.onReturn) {
-					assert(f.onReturn(resolved))
-				}
+			return new Promise((resolve, reject) => {
+				returned = f(...args)
 				callStack.pop()
-			})
-			if (f.onError) {
-				returned.catch(err => {
+				returned.then(resolved => {
 					callStack.push(fcall) // Async-ify the callStack
-					f.onError(err)
+					if (f.type) {
+						(f.type(resolved))
+					}
+					if (f.onReturn) {
+						assert(f.onReturn(resolved))
+					}
+					resolve(resolved)
+					callStack.pop()
+				}).catch(err => {
+					callStack.push(fcall) // Async-ify the callStack
+					if (f.onError) {
+						f.onError(err)
+					} else {
+						reject(err)
+					}
 					callStack.pop()
 				})
-			}
+			})
 		} else {
 			if (f.onError) {
 				try {
@@ -56,8 +61,8 @@ module.exports = (function __fn__ (f) {
 			if (f.onReturn) {
 				assert(f.onReturn(returned))
 			}
+			callStack.pop()
+			return returned
 		}
-		callStack.pop()
-		return returned
 	}
 })
