@@ -32,7 +32,7 @@ export default fn (customer => {
 When a type check fails, an error is thrown, with a message of the form:
 
 ```
-TypeError: Function of type String returned Void:
+TypeError: Function of type String returned a Number:
 
     fn (customer => {
 
