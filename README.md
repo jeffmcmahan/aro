@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Aro is a development tool which configures arrow functions so that it they can contain enforceable parameter type checks, return type checks, preconditions, and postconditions, entirely *in situ*. The type checks and contracts are enforced only during development/debugging.
+Aro is a development tool which configures arrow functions so they can contain enforceable parameter type checks, return type checks, preconditions, and postconditions, entirely *in situ*. The type checks and contracts are enforced only during development/debugging.
 
 ```sh
 npm install aro
