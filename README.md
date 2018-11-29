@@ -85,7 +85,7 @@ import {fn, desc, post} from 'aro'
 export default fn (customer => {
 
     desc    ('Construct a serviceable greeting name.')
-    pre     (customer.length > 0)
+    pre     (() => customer.length > 0)
     post    (r => first || last || (r === fallback))
 
     const fallback = 'We don\'t know your name...'
