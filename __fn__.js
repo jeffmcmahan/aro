@@ -2,14 +2,7 @@
 
 const {isAsync} = require('./utils')
 const callStack = require('./call-stack')
-
-// Just throw if the condition is false.
-const assert = (condition => {
-	if (!condition) {
-		throw new Error('Test failed.')
-		// Todo: Serialize the function to create a nice message.
-	}
-})
+const assert = require('./utils/assert')
 
 module.exports = (function __fn__ (f) {
 
@@ -30,8 +23,8 @@ module.exports = (function __fn__ (f) {
 					if (f.type) {
 						(f.type(resolved))
 					}
-					if (f.onReturn) {
-						assert(f.onReturn(resolved))
+					if (f.post) {
+						assert(f.post(resolved))
 					}
 					resolve(resolved)
 					callStack.pop()
@@ -58,8 +51,8 @@ module.exports = (function __fn__ (f) {
 			if (f.type) {
 				(f.type(returned))
 			}
-			if (f.onReturn) {
-				assert(f.onReturn(returned))
+			if (f.post) {
+				assert(f.post(returned))
 			}
 			callStack.pop()
 			return returned

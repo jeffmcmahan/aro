@@ -3,37 +3,57 @@
 const typeCheck = require('protocheck')
 const callStack = require('./call-stack')
 const error = require('./utils/error')
-const noop = () => void 0
+const assert = require('./utils/assert')
+const mode = require('./utils/mode')()
+const noop = () => noop
+const api = {}
 
-// API surface
-exports.types 	= typeCheck.types
-exports.fn 		= require('./__fn__')
-exports.desc 	= noop
-exports.note 	= noop
-exports.assert 	= f => callStack.slice(-1)[0].fn.onReturn = f
-exports.error 	= f => callStack.slice(-1)[0].fn.onError = f
+// Development/Debug Mode
+if (mode === 'on') {
+	api.fn 		= require('./__fn__')
+	api.desc 	= noop
+	api.note 	= noop
+	api.pre 	= assert
+	api.post 	= f => callStack.slice(-1)[0].fn.post = f
+	api.error 	= f => callStack.slice(-1)[0].fn.onError = f
 
-exports.param = val => __Type => {
-	if (typeCheck(val, __Type)) {
+	api.param = val => __Type => {
+		if (typeCheck(val, __Type)) {
+			return noop
+		}
+		const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, __Type)
+		throw new TypeError(
+			error.paramType(expectedTypeName, valueTypeName, new Error())
+		)
+	}
+	
+	api.returns = Type => {
+		callStack.slice(-1)[0].fn.type = val => {
+			if (!typeCheck(val, Type)) {
+				const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, Type)
+				throw new TypeError(
+					error.returnType(expectedTypeName, valueTypeName, new Error())
+				)
+			}
+		}
 		return noop
 	}
-	const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, __Type)
-	throw new TypeError(
-		error.paramType(expectedTypeName, valueTypeName, new Error())
-	)
+	api.types 	= typeCheck.types
+	Object.keys(api.types).forEach(key => api[key] = api.types[key])
 }
 
-exports.returns = Type => {
-	callStack.slice(-1)[0].fn.type = val => {
-		if (!typeCheck(val, Type)) {
-			const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, Type)
-			throw new TypeError(
-				error.returnType(expectedTypeName, valueTypeName, new Error())
-			)
-		}
-	}
-	return noop
+// Production Mode
+if (mode === 'off') {
+	api.fn 		= f => f
+	api.desc 	= noop
+	api.note 	= noop
+	api.pre 	= noop
+	api.post 	= noop
+	api.error 	= noop
+	api.param 	= noop
+	api.returns = noop
+	api.types 	= typeCheck.types
+	Object.keys(api.types).forEach(key => api[key] = api.types[key] = noop)	
 }
 
-// Dynamically export the types at the top-level.
-Object.keys(exports.types).forEach(key => exports[key] = exports.types[key])
+module.exports = api

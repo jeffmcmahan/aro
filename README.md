@@ -2,11 +2,38 @@
 
 ## Introduction
 
-Arrow passing style is (my term for) a way of programming in ES6 based on the idea that we can produce more reliable programs if we document behavior, check types, handle errors, and test *in situ.* Some utilities for this are provided by the `aro` package:
+Aro is a development tool which configures arrow functions so that it they can contain enforceable parameter type checks, return type checks, preconditions, and postconditions, entirely *in situ*. The type checks and contracts are enforced only during development/debugging.
 
 ```sh
 npm install aro
 ```
+
+There are several ways to run your code so that the type checks and contracts are enforced. First, you can tell node to execute your code in debug mode using `node inspect`:
+
+```
+node inspect ./my-project
+```
+
+Alternatively, set the `NODE_ENV` environment variable to `development`:
+
+```
+NODE_ENV="development" node ./my-project
+```
+
+Or simply pass `--development` as a flag when you start node:
+
+```
+node ./my-project --development
+```
+
+In the browser, set a global `--development` variable to `true` before your code include(s):
+
+```html
+<script>window['--development'] == true</script>
+<script src="/my-project.bundle.js"></script>
+```
+
+This can also be done as part of a build process by prepending `window['--development'] == true;` to the bundle.
 
 ### Type Checking
 
@@ -50,15 +77,16 @@ TypeError: Function of type String returned a Number:
     ...
 ```
 
-### Testing
+### Creating Contracts
 
 ```js
-import {fn, desc, assert} from 'aro'
+import {fn, desc, post} from 'aro'
 
 export default fn (customer => {
 
     desc    ('Construct a serviceable greeting name.')
-    assert  (r => first || last || (r === fallback))
+    pre     (customer.length > 0)
+    post    (r => first || last || (r === fallback))
 
     const fallback = 'We don\'t know your name...'
     const {first, last} = customer
@@ -66,7 +94,7 @@ export default fn (customer => {
 })
 ```
 
-The `assert` call declares a test which examines the return value of the function (`r`) and the values of the private `first`, `last`, and `fallback` variables.
+The `pre` call amounts to an `assert` call, whereas the `post` call declares a test which examines the return value of the function (`r`).
 
 ### Handling Execptions
 
@@ -165,5 +193,4 @@ const distance = fn ((a, b)) => {
         (x2 - x1)**2 + (y2 - y1)**2
     )
 })
-
 ```

@@ -4,7 +4,11 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test": "node ./tests"
+		"test": "npm run test:flag && npm run test:node_env && npm run test:production",
+		"test:production": "node ./tests/production",
+		"test:flag": "node ./tests/development --development",
+		"test:node_env": "NODE_ENV=development node ./tests/development",
+		"test:inspect": "node inspect ./tests/development"
 	},
 	"author": "Jeff McMahan",
 	"license": "MIT",
