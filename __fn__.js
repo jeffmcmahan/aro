@@ -4,58 +4,48 @@ const {isAsync} = require('./utils')
 const callStack = require('./call-stack')
 const assert = require('./utils/assert')
 
+const syncCall = (f, ...args) => {
+	let returned = f(...args)
+	if (f.type) {
+		(f.type(returned))
+	}
+	if (f.post) {
+		assert(f.post(returned))
+	}
+	return returned
+}
+
+const asyncCall = (f, call, ...args) => {
+	return new Promise((resolve, reject) => {
+		f(...args).then(resolved => {
+			callStack.push(call)
+			if (f.type) {
+				(f.type(resolved))
+			}
+			if (f.post) {
+				assert(f.post(resolved))
+			}
+			resolve(resolved)
+			callStack.pop()
+		}).catch(err => {
+			callStack.push(call)
+			reject(err)
+			callStack.pop()
+		})
+	})
+}
+
 module.exports = (function __fn__ (f) {
 
 	// Note whether it uses the "async" keyword.
-	f.async = isAsync(f) 	
+	f.async = isAsync(f)
 
-	// Return a new function.
+	// Return the wrapper function that gets called.
 	return (...args) => {
-		const fcall = {fn:f, args}
-		callStack.push(fcall)
-		let returned
-		if (f.async) {
-			return new Promise((resolve, reject) => {
-				returned = f(...args)
-				callStack.pop()
-				returned.then(resolved => {
-					callStack.push(fcall) // Async-ify the callStack
-					if (f.type) {
-						(f.type(resolved))
-					}
-					if (f.post) {
-						assert(f.post(resolved))
-					}
-					resolve(resolved)
-					callStack.pop()
-				}).catch(err => {
-					callStack.push(fcall) // Async-ify the callStack
-					if (f.onError) {
-						f.onError(err)
-					} else {
-						reject(err)
-					}
-					callStack.pop()
-				})
-			})
-		} else {
-			if (f.onError) {
-				try {
-					returned = f(...args)
-				} catch (err) {
-					f.onError(err)
-				}
-			} else {
-				returned = f(...args)
-			}
-			if (f.type) {
-				(f.type(returned))
-			}
-			if (f.post) {
-				assert(f.post(returned))
-			}
-			callStack.pop()
-			return returned
-		}
+		const call = {fn: f, args}
+		callStack.push(call) // Add the internal function to the call stack.
+		const result = f.async ? asyncCall(f, call, ...args) : syncCall(f, ...args)
+		callStack.pop() // Remove from the call stack.
+		return result
 	}
 })

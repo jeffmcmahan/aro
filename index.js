@@ -15,7 +15,6 @@ if (mode === 'on') {
 	api.note 	= noop
 	api.pre 	= assert
 	api.post 	= f => callStack.slice(-1)[0].fn.post = f
-	api.error 	= f => callStack.slice(-1)[0].fn.onError = f
 
 	api.param = val => __Type => {
 		if (typeCheck(val, __Type)) {
@@ -49,7 +48,6 @@ if (mode === 'off') {
 	api.note 	= noop
 	api.pre 	= noop
 	api.post 	= noop
-	api.error 	= noop
 	api.param 	= noop
 	api.returns = noop
 	api.types 	= typeCheck.types
