@@ -19,3 +19,5 @@ const aroFunctinosAreDead = fn (fooParam => {
 
 assert.equal(functionShouldRun(), 5)
 assert.doesNotThrow(aroFunctinosAreDead)
+
+console.log('Production mode tests completed.')

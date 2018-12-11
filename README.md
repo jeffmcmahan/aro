@@ -121,7 +121,7 @@ Maybe(String)
 
 ### Tuple Types
 
-To declare a tuple, pass an array literal to `Tuple`.
+To declare a tuple, pass a list of types to `Tuple`.
 
 ```js
 Tuple(String, Number, Boolean)

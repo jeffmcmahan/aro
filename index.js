@@ -54,4 +54,4 @@ if (mode === 'off') {
 	Object.keys(api.types).forEach(key => api[key] = api.types[key] = noop)	
 }
 
-module.exports = api
+module.exports = Object.freeze(api)
