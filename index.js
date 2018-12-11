@@ -14,7 +14,7 @@ if (mode === 'on') {
 	api.desc 	= noop
 	api.note 	= noop
 	api.pre 	= assert
-	api.post 	= f => callStack.slice(-1)[0].fn.post = f
+	api.post 	= f => callStack.slice(-1)[0].post = f
 
 	api.param = val => __Type => {
 		if (typeCheck(val, __Type)) {
@@ -27,7 +27,7 @@ if (mode === 'on') {
 	}
 	
 	api.returns = Type => {
-		callStack.slice(-1)[0].fn.type = val => {
+		callStack.slice(-1)[0].type = val => {
 			if (!typeCheck(val, Type)) {
 				const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, Type)
 				throw new TypeError(
@@ -37,7 +37,7 @@ if (mode === 'on') {
 		}
 		return noop
 	}
-	api.types 	= typeCheck.types
+	api.types = typeCheck.types
 	Object.keys(api.types).forEach(key => api[key] = api.types[key])
 }
 

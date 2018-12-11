@@ -40,7 +40,7 @@ const filterStack = stack => {
 	return lines
 		.slice(1)
 		.filter(ln => !ln.includes('__Type'))						// param()
-		.filter(ln => !ln.includes('callStack.slice.fn.type.val')) 	// returns()
+		.filter(ln => !ln.includes('callStack.slice.type.val')) 	// returns()
 		.filter(ln => !ln.includes('__fn__'))						// main
 		.filter(ln => !ln.includes('(internal/'))					// irrelevant
 		.join('\n') + ('\n\n    Original Stack:\n')

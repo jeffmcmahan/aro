@@ -1,7 +1,7 @@
 'use strict'
 
 const nodeAssert = require('assert')
-const {fn, returns, desc, param} = require('../../index')
+const {fn, returns, desc, param, Any, T} = require('../../index')
 
 const test1 = fn (() => {
 
@@ -31,3 +31,20 @@ nodeAssert.throws(() => test2(1), ({message}) => {
 	)
 	return firstStackLn.includes('at arg ')
 })
+
+const deepFreeze = fn (v => {
+
+	desc	('Lets make sure that recursion works.')
+	param	(v)(Any)
+	returns	(T(v))
+
+	Object.keys(v).forEach(key => {
+		const value = v[key]
+		if (value && typeof value === 'object') {
+			deepFreeze(value)
+		}
+	})
+	return Object.freeze(v)
+})
+
+nodeAssert.doesNotThrow(() => deepFreeze([{}, {}, {}]))
