@@ -2,15 +2,14 @@
 
 const {isAsync} = require('./utils')
 const callStack = require('./call-stack')
-const assert = require('./utils/assert')
 
 const syncCall = (f, call, ...args) => {
 	let returned = f(...args)
 	if (call.type) {
 		(call.type(returned))
 	}
-	if (call.post) {
-		assert(f.post(returned))
+	if (call.post.length) {
+		call.post.forEach(cond => cond(returned))
 	}
 	return returned
 }
@@ -22,8 +21,8 @@ const asyncCall = (f, call, ...args) => {
 			if (call.type) {
 				(call.type(resolved))
 			}
-			if (call.post) {
-				assert(call.post(resolved))
+			if (call.post.length) {
+				call.post.forEach(postCond => postCond(resolved))
 			}
 			resolve(resolved)
 			callStack.pop()
@@ -42,7 +41,11 @@ module.exports = (function __fn__ (f) {
 
 	// Return the wrapper function that gets called.
 	return (...args) => {
-		const call = {fn: f, args}
+		const call = {
+			args,
+			fn: f,
+			post: []
+		}
 		callStack.push(call) // Add the invocation to the call stack.
 
 		// Execute the function and save the result.

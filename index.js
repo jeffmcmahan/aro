@@ -3,7 +3,6 @@
 const typeCheck = require('protocheck')
 const callStack = require('./call-stack')
 const error = require('./utils/error')
-const assert = require('./utils/assert')
 const mode = require('./utils/mode')()
 const noop = () => noop
 const api = {}
@@ -13,8 +12,6 @@ if (mode === 'on') {
 	api.fn 		= require('./__fn__')
 	api.desc 	= noop
 	api.note 	= noop
-	api.pre 	= assert
-	api.post 	= f => callStack.slice(-1)[0].post = f
 
 	api.param = val => __Type => {
 		if (typeCheck(val, __Type)) {
@@ -26,6 +23,33 @@ if (mode === 'on') {
 		)
 	}
 	
+	api.pre = condition => {
+		const call = callStack.slice(-1)[0]
+		const conditionIndex = ++call.pre
+		if (!condition) {
+			throw new Error(
+				`Precondition ${conditionIndex} failed in: fn (${call.fn.toString()})`
+			)
+			// throw new error.preConditionFailure(fn, conditionIndex, new Error())
+			// 'Error: Second precondition failed in: fn (() => ....'
+		}
+	}
+
+	api.post = f => {
+		const call = callStack.slice(-1)[0]
+		const conditionCheck = returnVal => {
+			if (!f(returnVal)) {
+				throw new Error(
+					`Post-condition ${f.toString()} failed in: fn (${call.fn.toString()})`
+				)
+				// throw new error.postConditionFailure(condition, returnVal, fn, new Error())
+				// 'Error: Post-condition 'r => !isNaN(r)' failed in: fn (() => ....'
+			}
+		}
+		callStack.slice(-1)[0].post.push(conditionCheck)
+		
+	}
+
 	api.returns = Type => {
 		callStack.slice(-1)[0].type = val => {
 			if (!typeCheck(val, Type)) {

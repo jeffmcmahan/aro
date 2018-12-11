@@ -9,6 +9,8 @@ require('./tuple-types')
 require('./nesting')
 console.log('Typechecking tests completed.')
 
+require('./contracts')
+
 require('./stack')
 console.log('Error stack tests completed.')
 
