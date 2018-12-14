@@ -71,11 +71,11 @@ In production mode, `fn` becomes the identity function, and the `param`, `return
 
 ## Type Declarations
 
-Aro relies on the [`protocheck`](https://github.com/jeffmcmahan/protocheck) library for all type checking functionality, and Aro's API directly exposes the composable higher-order types implemented by `protocheck`, as well (read further).
+Aro relies on the [Protocheck](https://github.com/jeffmcmahan/protocheck) library for all type checking functionality, and Aro's API directly exposes the composable higher-order types implemented by Protocheck, as well (read further).
 
 ### Simple Types
 
-The `protocheck` library implements simple types with semantics that keep to the type definitions in the ES6 spec, with two exception: arrays and functions are not considered `Object` instances.  
+Protocheck implements simple types with semantics that keep to the type definitions in the ES6 spec, with two exception: arrays and functions are not considered `Object` instances.  
 
 * Any `class` or constructor function (`String`, `Date`, `YourClass`, etc.).
 * `Object` is any non-primitive except functions, arrays, and null-proto objects. 
