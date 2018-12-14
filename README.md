@@ -16,7 +16,6 @@ export default fn (customer => {
 
     param   (customer)(Object)
     returns (String)
-    precon  (customer.length > 0)
     postcon (r => (first || last) || (r === fallback))
 
     const fallback = 'We don\'t know your name...'
@@ -34,7 +33,6 @@ TypeError: Function of type String returned a Number:
 
         param   (customer)(Object)
         returns (String)
-        precon  (customer.length > 0)
         postcon (r => (first || last) || (r === fallback))
 
         const fallback = 'We don\'t know your name...'
