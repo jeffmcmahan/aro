@@ -1,12 +1,12 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, desc, param, returns} = require('../../index')
+const {fn, param, returns} = require('../../index')
 const dict = Object.create(null)
 
+// Return type.
 const test1 = fn (() => {
 
-	desc	('Return type.')
 	returns	(String)
 
 	return ''
@@ -14,9 +14,9 @@ const test1 = fn (() => {
 
 success(test1)
 
+// Parameter type.
 const test2 = fn (foo => {
 
-	desc	('Parameter type.')
 	param 	(foo)(String)
 
 	return ''

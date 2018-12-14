@@ -4,15 +4,12 @@ const typeCheck = require('protocheck')
 const callStack = require('./call-stack')
 const error = require('./utils/error')
 const mode = require('./utils/mode')()
-const noop = () => noop
+const noop = ()=>{}
 const api = {}
 
 // Development/Debug Mode
 if (mode === 'on') {
-	api.fn 		= require('./__fn__')
-	api.desc 	= noop
-	api.note 	= noop
-
+	api.fn = require('./__fn__')
 	api.param = val => __Type => {
 		if (typeCheck(val, __Type)) {
 			return noop
@@ -22,8 +19,7 @@ if (mode === 'on') {
 			error.paramType(expectedTypeName, valueTypeName, new Error())
 		)
 	}
-	
-	api.pre = condition => {
+	api.precon = condition => {
 		const call = callStack.slice(-1)[0]
 		const conditionIndex = ++call.pre
 		if (!condition) {
@@ -34,8 +30,7 @@ if (mode === 'on') {
 			// 'Error: Second precondition failed in: fn (() => ....'
 		}
 	}
-
-	api.post = f => {
+	api.postcon = f => {
 		const call = callStack.slice(-1)[0]
 		const conditionCheck = returnVal => {
 			if (!f(returnVal)) {
@@ -49,7 +44,6 @@ if (mode === 'on') {
 		callStack.slice(-1)[0].post.push(conditionCheck)
 		
 	}
-
 	api.returns = Type => {
 		callStack.slice(-1)[0].type = val => {
 			if (!typeCheck(val, Type)) {
@@ -68,14 +62,16 @@ if (mode === 'on') {
 // Production Mode
 if (mode === 'off') {
 	api.fn 		= f => f
-	api.desc 	= noop
-	api.note 	= noop
-	api.pre 	= noop
-	api.post 	= noop
-	api.param 	= noop
+	api.precon 	= noop
+	api.postcon = noop
+	api.param 	= f => noop
 	api.returns = noop
-	api.types 	= typeCheck.types
-	Object.keys(api.types).forEach(key => api[key] = api.types[key] = noop)	
+	api.types 	= {}
+	Object.keys(typeCheck.types).forEach(key => api[key] = api.types[key] = noop)
 }
 
+// Lock down the types API.
+Object.freeze(api.types)
+
+// Lock down the top-level API.
 module.exports = Object.freeze(api)

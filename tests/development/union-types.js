@@ -1,11 +1,11 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, desc, U, returns} = require('../../index')
+const {fn, U, returns} = require('../../index')
 
+// Union with a String returned.
 const test1 = fn (() => {
 
-	desc	('Union with a String returned.')
 	returns (U(String, Number))
 
 	return ''
@@ -13,9 +13,9 @@ const test1 = fn (() => {
 
 success(test1)
 
+// Union with a Number returned.
 const test2 = fn(() => {
 
-	desc	('Union with a Number returned.')
 	returns (U(String, Number)) 
 
 	return 0
@@ -23,9 +23,9 @@ const test2 = fn(() => {
 
 success(test2)
 
+// Union with Void returned.
 const test3 = fn (() => {
 
-	desc	('Union with Void returned.')
 	returns (U(String, Number))
 	
 	// No return statement here.
@@ -33,9 +33,9 @@ const test3 = fn (() => {
 
 fail(test3, 'Function of type U(String, Number) returned undefined')
 
+// Union with Boolean returned.
 const test4 = fn (() => {
 
-	desc	('Union with Boolean returned.')
 	returns (U(String, Number))
 
 	return false

@@ -1,11 +1,11 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, desc, Maybe, returns} = require('../../index')
+const {fn, Maybe, returns} = require('../../index')
 
+// Maybe with a String returned.
 const test1 = fn (() => {
 
-	desc	('Maybe with a String returned.')
 	returns (Maybe(String))
 
 	return 'foo'
@@ -13,9 +13,9 @@ const test1 = fn (() => {
 
 success(test1)
 
+// Maybe with Void returned.
 const test2 = fn (() => {
 
-	desc	('Maybe with Void returned.')
 	returns (Maybe(String))
 
 	// No return statement here.
@@ -23,9 +23,9 @@ const test2 = fn (() => {
 
 success(test2)
 
+// Maybe with a Number returned.
 const test3 = fn(() => {
 
-	desc	('Maybe with a Number returned.')
 	returns (Maybe(String))
 
 	return 0

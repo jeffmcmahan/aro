@@ -1,13 +1,13 @@
 'use strict'
 
 const {success} = require('./utils')
-const {fn, desc, param, Any, returns} = require('../../index')
+const {fn, param, Any, returns} = require('../../index')
 
+// This should always work. There are no checks.
 const test1 = fn (foo => {
 
-	desc    ('This should always work. There are no checks.')
 	param   (foo)(Any)
-	returns (Any)('Does not matter')
+	returns (Any)
 	
 	return new Date()
 })

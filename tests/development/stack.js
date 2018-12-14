@@ -1,11 +1,11 @@
 'use strict'
 
 const nodeAssert = require('assert')
-const {fn, returns, desc, param, Any, T} = require('../../index')
+const {fn, returns, param, Any, T} = require('../../index')
 
+// A function that will always throw for return type.
 const test1 = fn (() => {
 
-	desc	('A function that will always throw for return type.')
 	returns (String)
 
 	return 1
@@ -18,9 +18,9 @@ nodeAssert.throws(test1, ({message}) => {
 	return firstStackLn.includes('getActual')
 })
 
+// A function that will always throw for return type.
 const test2 = fn (arg => {
 
-	desc	('A function that will always throw for return type.')
 	param	(arg)(String)
 
 })
@@ -32,9 +32,9 @@ nodeAssert.throws(() => test2(1), ({message}) => {
 	return firstStackLn.includes('at arg ')
 })
 
+// Lets make sure that recursion works.
 const deepFreeze = fn (v => {
 
-	desc	('Lets make sure that recursion works.')
 	param	(v)(Any)
 	returns	(T(v))
 

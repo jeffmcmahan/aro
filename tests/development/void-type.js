@@ -1,11 +1,11 @@
 'use strict'
 
 const {success, fail} = require('./utils')
-const {fn, desc, Void, returns} = require('../../index')
+const {fn, Void, returns} = require('../../index')
 
+// Let implicit return produce undefined.
 const test1 = fn (() => {
 
-	desc	('Let implicit return produce undefined.')
 	returns (Void)
 
 	// No return statement here.
@@ -13,9 +13,9 @@ const test1 = fn (() => {
 
 success(test1)
 
+// Void with a return value should fail.
 const test2 = fn (() => {
 
-	desc	('Void with a return value should fail.')
 	returns (Void)
 
 	return ''

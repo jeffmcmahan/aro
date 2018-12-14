@@ -1,51 +1,23 @@
 # Aro
 ## Introduction
-Aro is a development tool which configures arrow functions so they can contain enforceable parameter type checks, return type checks, preconditions, and postconditions, entirely *in situ*. The type checks and contracts are enforced only during development/debugging.
+Aro is a library that allows the creation of arrow functions that contain enforceable parameter type checks, return type checks, preconditions, and postconditions (using plain ES2017). The type checks and contracts are enforced only when in development mode.
 
 ```sh
 npm install aro
 ```
 
-There are several ways to tell Aro to enforce the type checks and contracts. The first option is tell node to execute your code in debug mode using `node inspect`:
-
-```
-node inspect ./my-project
-```
-
-Alternatively, set `NODE_ENV` to `development`:
-
-```
-NODE_ENV="development" node ./my-project
-```
-
-Or pass `--development` as a flag when you start node:
-
-```
-node ./my-project --development
-```
-
-In the browser, set a global `--development` variable to `true` before your code include(s):
-
-```html
-<script>window['--development'] == true</script>
-<script src="/my-project.bundle.js"></script>
-```
-
-This can also be done as part of a build process by prepending `window['--development'] == true;` to the bundle.
-
-## Type Checking
-Use JsDoc-like conventions to (optionally) declare and enforce function return types (`returns`) and parameter types (`param`), as shown here:
+## Example
 
 ```js
-// get-customer-name.js
+import {fn, param, returns, precon, postcon} from 'aro'
 
-import {fn, desc, param, returns} from 'aro'
-
+// Construct a serviceable greeting name.
 export default fn (customer => {
 
-    desc    ('Construct a serviceable greeting name.')
     param   (customer)(Object)
     returns (String)
+    precon  (customer.length > 0)
+    postcon (r => (first || last) || (r === fallback))
 
     const fallback = 'We don\'t know your name...'
     const {first, last} = customer
@@ -53,55 +25,67 @@ export default fn (customer => {
 })
 ```
 
-When a type check fails, an error is thrown, with a message of the form:
+During development, if any constraint fails, an error is thrown, with a message of the form:
 
 ```
 TypeError: Function of type String returned a Number:
 
     fn (customer => {
 
-        desc    ('Construct a serviceable greeting name.')
         param   (customer)(Object)
         returns (String)
+        precon  (customer.length > 0)
+        postcon (r => (first || last) || (r === fallback))
 
         const fallback = 'We don\'t know your name...'
         const {first, last} = customer
         return (([first, last]).filter(n => n).join(' ') || fallback)
     })
 
-    at anonymous (.../foo/bar/baz/get-customer-name.js:7:2)
+    at anonymous (.../foo/bar/baz/get-customer-name.js:6:2)
     at Object.<anonymous> (.../foo/bar/baz.js:32:1)
     ...
 ```
 
-## Contracts
+## Development Mode
 
-```js
-import {fn, desc, post} from 'aro'
+There are 4 ways to tell Aro to enforce type checks and contracts:
 
-export default fn (customer => {
+1. Run node in debug mode:
+    ```
+    node inspect ./my-project
+    ```
+2. Set `NODE_ENV` to `development`:
+    ```
+    NODE_ENV=development node ./my-project
+    ```
+3. Pass a `--development` flag when you start node:
+    ```
+    node ./my-project --development
+    ```
+4. Set `window['--development']` to `true` before the importing Aro (browser only).
 
-    desc ('Construct a serviceable greeting name.')
-    pre  (() => customer.length > 0)
-    post (r => first || last || (r === fallback))
+## Production Mode
 
-    const fallback = 'We don\'t know your name...'
-    const {first, last} = customer
-    return (([first, last]).filter(n => n).join(' ') || fallback)
-})
-```
+Production mode disables all Aro functionality, replacing everything with the lightest possible stand-in, so that your code runs as fast as possible, without having to transpile the Aro functions out of it.
 
-The `pre` call amounts to an `assert` call, whereas the `post` call declares a test which examines the return value of the function (`r`).
+In production mode, `fn` becomes the identity function, and the `param`, `returns`, `precon`, and `postcon` functions become no-ops. In modern JS engines, no-op invocations will either be removed from the call stack entirely by speculative optimization, or will execute at &approx; >1.5 &times; 10<sup>9</sup> ops/sec (*i.e.,* there is no observable performance impact while in production mode, in either case).
 
 ## Type Declarations
+
+Aro relies on the [`protocheck`](https://github.com/jeffmcmahan/protocheck) library for all type checking functionality, and Aro's API directly exposes the composable higher-order types implemented by `protocheck`, as well (read further).
+
 ### Simple Types
 
+The `protocheck` library implements simple types with semantics that keep to the type definitions in the ES6 spec, with two exception: arrays and functions are not considered `Object` instances.  
+
 * Any `class` or constructor function (`String`, `Date`, `YourClass`, etc.).
+* `Object` is any non-primitive except functions, arrays, and null-proto objects. 
 * `Any` is anything (including `undefined`).
-* `Null` (regarded for sanity's sake as the type of `null`)
-* `Undefined`
-* `Void` (`null` or `undefined`)
-* `Dictionary` is an object with no prototype (*i.e.,* `Object.create(null)`).
+* `Null` is the type of `null` (per the ES6 spec).
+* `Undefined` is the type of `undefined` (per the ES6 spec).
+* `Void` is a value of type `Null` or `Undefined`.
+* `Dictionary` is a null-prototype object (*i.e.,* `Object.create(null)`).
 
 ### Union Types
 
@@ -111,12 +95,29 @@ To declare a union type, pass a list of types to `U`.
 U(String, Number)
 ```
 
+This could be used as a parameter type check, for example, as shown:
+
+```js
+exports.convertIdToInt = fn (id => {
+
+    param   (id)(U(String, Number))
+    returns (Number)
+    postcon (r => Number.isInteger(r))
+
+    return parseInt(id, 10)
+})
+```
+
 ### Maybe Types
 
-Maybe types are a special case of union types (`Maybe` implicitly includes `Void` in the list of types).
+Maybe constructs a union type that implicitly includes `Void`.
 
 ```js
 Maybe(String)
+
+// The above is exactly the same as the below:
+
+U(String, Void)
 ```
 
 ### Tuple Types
@@ -132,9 +133,12 @@ Tuple(String, Number, Boolean)
 To declare a generic type, use the `T` function and pass it a value:
 
 ```js
-const fn (foo => {
-    // Returns a value of the same type as foo.
-    returns (T(foo))
+exports.fooFunc = fn (obj => {
+
+    param   (obj)(Object)
+    returns (T(obj)) // Returns an object of the same type as obj.
+
+    return new obj.constructor()
 })
 ```
 
@@ -153,9 +157,9 @@ Any type can be saved and reused:
 ```js
 const Coordinate = Tuple(Number, Number)
 
+// Get the distance between points a and b.
 const distance = fn ((a, b)) => {
 
-    desc    ('Get the distance between points a and b.')
     param   (a)(Coordinate)
     param   (b)(Coordinate)
     returns (Number)
@@ -167,4 +171,20 @@ const distance = fn ((a, b)) => {
         (x2 - x1)**2 + (y2 - y1)**2
     )
 })
+```
+
+## Return Types in Async Functions
+
+Within `async` functions, Aro will respect the use of the `return` keyword, so that `returns (String)` would check the *resolved* value rather than the returned value (which would be a `Promise` object).
+
+```js
+exports.asyncIdentity = fn (async (x) => {
+
+    param   (x)(Number)
+    returns (Number)
+
+    return x
+})
+
+asyncIdentity(5) // pass
 ```
