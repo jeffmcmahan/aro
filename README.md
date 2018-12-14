@@ -75,7 +75,7 @@ Aro relies on the [Protocheck](https://github.com/jeffmcmahan/protocheck) librar
 
 ### Simple Types
 
-Protocheck implements simple types with semantics that keep to the type definitions in the ES6 spec, with two exceptions: arrays and functions are not considered `Object` instances.
+Protocheck implements simple types with semantics that keep to the type definitions in the ES6 spec, with two exceptions: arrays and functions are not considered `Object` instances. The simple types are:
 
 * Any `class` or constructor function (`String`, `Date`, `YourClass`, etc.).
 * `Object` is any non-primitive except functions, arrays, and null-proto objects. 
