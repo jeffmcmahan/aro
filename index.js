@@ -21,10 +21,10 @@ if (mode === 'on') {
 	}
 	api.precon = condition => {
 		const call = callStack.slice(-1)[0]
-		const conditionIndex = ++call.pre
+		call.pre++
 		if (!condition) {
 			throw new Error(
-				`Precondition ${conditionIndex} failed in: fn (${call.fn.toString()})`
+				`Precondition #${call.pre} failed in: fn (${call.fn.toString()})`
 			)
 			// throw new error.preConditionFailure(fn, conditionIndex, new Error())
 			// 'Error: Second precondition failed in: fn (() => ....'

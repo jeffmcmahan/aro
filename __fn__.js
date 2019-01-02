@@ -44,6 +44,7 @@ module.exports = (function __fn__ (f) {
 		const call = {
 			args,
 			fn: f,
+			pre: 0,
 			post: []
 		}
 		callStack.push(call) // Add the invocation to the call stack.
