@@ -4,7 +4,7 @@ const typeCheck = require('protocheck')
 const callStack = require('./call-stack')
 const error = require('./utils/error')
 const mode = require('./utils/mode')()
-const noop = ()=>{}
+const noop = () => {}
 const api = {}
 
 // Development/Debug Mode
@@ -26,8 +26,6 @@ if (mode === 'on') {
 			throw new Error(
 				`Precondition #${call.pre} failed in: fn (${call.fn.toString()})`
 			)
-			// throw new error.preConditionFailure(fn, conditionIndex, new Error())
-			// 'Error: Second precondition failed in: fn (() => ....'
 		}
 	}
 	api.postcon = f => {
@@ -37,17 +35,14 @@ if (mode === 'on') {
 				throw new Error(
 					`Post-condition ${f.toString()} failed in: fn (${call.fn.toString()})`
 				)
-				// throw new error.postConditionFailure(condition, returnVal, fn, new Error())
-				// 'Error: Post-condition 'r => !isNaN(r)' failed in: fn (() => ....'
 			}
 		}
 		callStack.slice(-1)[0].post.push(conditionCheck)
-		
 	}
-	api.returns = Type => {
+	api.returns = __Type => {
 		callStack.slice(-1)[0].type = val => {
-			if (!typeCheck(val, Type)) {
-				const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, Type)
+			if (!typeCheck(val, __Type)) {
+				const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, __Type)
 				throw new TypeError(
 					error.returnType(expectedTypeName, valueTypeName, new Error())
 				)

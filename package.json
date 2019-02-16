@@ -1,6 +1,6 @@
 {
 	"name": "aro",
-	"version": "0.4.1",
+	"version": "0.4.3",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
@@ -26,6 +26,6 @@
 		}
 	},
 	"dependencies": {
-		"protocheck": "^0.1.8"
+		"protocheck": "^0.1.9"
 	}
 }

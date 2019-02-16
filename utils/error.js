@@ -38,7 +38,6 @@ const fn = () => {
 const filterStack = stack => {
 	const lines = stack.split('\n')
 	return lines
-		.slice(1)
 		.filter(ln => !ln.includes('__Type'))						// param()
 		.filter(ln => !ln.includes('callStack.slice.type.val')) 	// returns()
 		.filter(ln => !ln.includes('__fn__'))						// main
