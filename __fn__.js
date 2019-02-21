@@ -59,7 +59,7 @@ module.exports = (function __fn__ (f) {
 	}
 
 	// Create the test definition interface.
-	indirectFunc.defineTest = (test => {
+	indirectFunc.test = (test => {
 		if (!test(indirectFunc)) {
 			throw new Error('Test failed: ' + test.toString() + '\n\nFor: fn (' + f.toString() + ')\n')
 		}

@@ -3,6 +3,7 @@
 const {fn, param, returns, precon, postcon, Maybe} = require('../../index')
 const assert = require('assert')
 
+const testRan = false
 const functionShouldRun = fn (() => 5)
 
 // None of the aro API functions should do anything.
@@ -17,7 +18,12 @@ const aroIsPassive = fn (fooParam => {
 	return 5
 })
 
+.test(() => {
+	testRan = true
+})
+
 assert.equal(functionShouldRun(), 5)
 assert.doesNotThrow(aroIsPassive)
+assert(testRan === false)
 
 console.log('Production mode tests completed.')

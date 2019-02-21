@@ -57,7 +57,10 @@ if (mode === 'on') {
 
 // Production Mode
 if (mode === 'off') {
-	api.fn 		= f => f
+	api.fn = f => {
+		f.test = () => f
+		return f
+	}
 	api.precon 	= noop
 	api.postcon = noop
 	api.param 	= curryNoop
