@@ -37,10 +37,10 @@ const asyncCall = (f, call, ...args) => {
 module.exports = (function __fn__ (f) {
 
 	// Note whether it uses the "async" keyword.
-	f.async = isAsync(f)
+	const _isAsync = isAsync(f)
 
 	// Return the wrapper function that gets called.
-	return (...args) => {
+	const indirectFunc = (...args) => {
 		const call = {
 			args,
 			fn: f,
@@ -50,11 +50,23 @@ module.exports = (function __fn__ (f) {
 		callStack.push(call) // Add the invocation to the call stack.
 
 		// Execute the function and save the result.
-		const result = f.async 
+		const result = _isAsync 
 			? asyncCall(f, call, ...args) 
 			: syncCall(f, call, ...args)
 		
 		callStack.pop() // Remove from the call stack.
 		return result
 	}
+
+	// Create the test definition interface.
+	indirectFunc.defineTest = (test => {
+		if (!test(indirectFunc)) {
+			throw new Error('Test failed: ' + test.toString() + '\n\nFor: fn (' + f.toString() + ')\n')
+		}
+		return indirectFunc
+	})
+
+	// Todo: Create the mock definition interface.
+
+	return indirectFunc
 })

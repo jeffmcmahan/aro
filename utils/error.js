@@ -30,7 +30,7 @@ const fn = () => {
 			lines[i] = line.replace(remove, '')
 		})
 		src = '\tfn (' + lines.join('\n\t') + ')'
-		return src.replace(/\t/g, '    ')
+		return src
 	}
 }
 

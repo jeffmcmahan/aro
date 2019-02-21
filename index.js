@@ -5,6 +5,7 @@ const callStack = require('./call-stack')
 const error = require('./utils/error')
 const mode = require('./utils/mode')()
 const noop = () => {}
+const curryNoop = () => noop
 const api = {}
 
 // Development/Debug Mode
@@ -59,14 +60,11 @@ if (mode === 'off') {
 	api.fn 		= f => f
 	api.precon 	= noop
 	api.postcon = noop
-	api.param 	= f => noop
+	api.param 	= curryNoop
 	api.returns = noop
-	api.types 	= {}
+	api.types	= {}
 	Object.keys(typeCheck.types).forEach(key => api[key] = api.types[key] = noop)
 }
 
-// Lock down the types API.
 Object.freeze(api.types)
-
-// Lock down the top-level API.
 module.exports = Object.freeze(api)
