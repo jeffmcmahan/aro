@@ -68,7 +68,10 @@ module.exports = (function __fn__ (f) {
 				if (!r) {
 					console.log(failMsg)
 				}
-			}).catch(e => console.log(e))
+			}).catch(e => {
+				console.log(failMsg)
+				console.log(e)
+			})
 		} else if (!test(indirectFunc)) {
 			console.log(failMsg)
 		}
