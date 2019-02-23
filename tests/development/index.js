@@ -12,7 +12,6 @@ console.log('Typechecking tests completed.')
 require('./contracts')
 
 require('./define-test')
-console.log('defineTest method tests completed.')
 
 require('./stack')
 console.log('Error stack tests completed.')

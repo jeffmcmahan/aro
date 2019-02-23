@@ -40,7 +40,7 @@ module.exports = (function __fn__ (f) {
 	const _isAsync = isAsync(f)
 
 	// Return the wrapper function that gets called.
-	const indirectFunc = (...args) => {
+	const indirectFunc = ((...args) => {
 		const call = {
 			args,
 			fn: f,
@@ -56,12 +56,21 @@ module.exports = (function __fn__ (f) {
 		
 		callStack.pop() // Remove from the call stack.
 		return result
-	}
+	}).bind(void 0)
 
 	// Create the test definition interface.
 	indirectFunc.test = (test => {
-		if (!test(indirectFunc)) {
-			throw new Error('Test failed: ' + test.toString() + '\n\nFor: fn (' + f.toString() + ')\n')
+		const failMsg = (
+			`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`
+		)
+		if (isAsync(test)) {
+			test(indirectFunc).then(r => {
+				if (!r) {
+					console.log(failMsg)
+				}
+			}).catch(e => console.log(e))
+		} else if (!test(indirectFunc)) {
+			console.log(failMsg)
 		}
 		return indirectFunc
 	})

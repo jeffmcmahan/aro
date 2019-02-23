@@ -1,4 +1,4 @@
 .DS_Store
 tests
 package-lock.json
-README.md
+*.md
