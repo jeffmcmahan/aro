@@ -48,7 +48,7 @@ const filterStack = stack => {
 
 exports.precondition = (number, err) => {
 	return (
-		`Precondition no. ${number} failed in: ` +
+		`Precondition no. ${number} failed in:\n\n` +
 		fn() + '\n\n' +
 		filterStack(err.stack || err.message)
 	)

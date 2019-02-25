@@ -20,11 +20,15 @@ if (mode === 'on') {
 			error.paramType(expectedTypeName, valueTypeName, new Error())
 		)
 	}
-	api.precon = condition => {
+	api.precon = f => {
 		const call = callStack.slice(-1)[0]
 		call.pre++
-		if (!condition) {
-			throw new Error(error.precondition(call.pre, new Error()))
+		try {
+			if (!f()) {
+				throw new Error(error.precondition(call.pre, new Error()))
+			}
+		} catch (e) {
+			throw new Error(error.precondition(call.pre, e))
 		}
 	}
 	api.postcon = f => {

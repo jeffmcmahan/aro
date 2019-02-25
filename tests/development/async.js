@@ -28,7 +28,7 @@ const test = fn (async (fooArg) => {
 	param   (fooArg)(String)
 	returns (String)
 
-	precon	(fooArg.includes('foo'))
+	precon	(() => fooArg.includes('foo'))
 	postcon	(r => r === 'foo')
 
 	syncFunc()

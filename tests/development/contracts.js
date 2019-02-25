@@ -4,8 +4,8 @@ const assert = require('assert')
 const {fn, precon, postcon} = require('../../index')
 
 const preTest = fn (arg => {
-	precon (!isNaN(arg))
-	precon (arg === 5)
+	precon (() => !isNaN(arg))
+	precon (() => arg === 5)
 })
 
 assert.throws(
