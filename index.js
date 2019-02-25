@@ -24,9 +24,7 @@ if (mode === 'on') {
 		const call = callStack.slice(-1)[0]
 		call.pre++
 		if (!condition) {
-			throw new Error(
-				`Precondition #${call.pre} failed in: fn (${call.fn.toString()})`
-			)
+			throw new Error(error.precondition(call.pre, new Error()))
 		}
 	}
 	api.postcon = f => {

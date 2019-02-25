@@ -10,11 +10,11 @@ const preTest = fn (arg => {
 
 assert.throws(
 	() => preTest(6),
-	e => e.message.includes('Precondition #2 failed')
+	e => e.message.includes('Precondition no. 2 failed')
 )
 assert.throws(
 	() => preTest(NaN),
-	e => e.message.includes('Precondition #1 failed')
+	e => e.message.includes('Precondition no. 1 failed')
 )
 assert.doesNotThrow(() => preTest(5))
 

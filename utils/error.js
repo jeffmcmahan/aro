@@ -38,11 +38,20 @@ const fn = () => {
 const filterStack = stack => {
 	const lines = stack.split('\n')
 	return lines
+		.filter(ln => !ln.includes('api.precon'))
 		.filter(ln => !ln.includes('__Type'))						// param()
 		.filter(ln => !ln.includes('callStack.slice.type.val')) 	// returns()
 		.filter(ln => !ln.includes('__fn__'))						// main
 		.filter(ln => !ln.includes('(internal/'))					// irrelevant
 		.join('\n') + ('\n\n    Original Stack:\n')
+}
+
+exports.precondition = (number, err) => {
+	return (
+		`Precondition no. ${number} failed in: ` +
+		fn() + '\n\n' +
+		filterStack(err.stack || err.message)
+	)
 }
 
 exports.returnType = (expected, actual, err) => {
