@@ -63,6 +63,7 @@ if (mode === 'on') {
 if (mode === 'off') {
 	api.fn = f => {
 		f.test = () => f
+		f.mock = () => f
 		return f
 	}
 	api.runTests = noop
