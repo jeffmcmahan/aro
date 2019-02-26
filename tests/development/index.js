@@ -10,8 +10,8 @@ require('./nesting')
 console.log('Typechecking tests completed.')
 
 require('./contracts')
-
 require('./define-test')
+require('./mock')
 
 require('./stack')
 console.log('Error stack tests completed.')
