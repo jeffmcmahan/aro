@@ -2,6 +2,7 @@
 
 const typeCheck = require('protocheck')
 const callStack = require('./call-stack')
+const definedTests = require('./defined-tests')
 const error = require('./utils/error')
 const mode = require('./utils/mode')()
 const noop = () => {}
@@ -53,6 +54,7 @@ if (mode === 'on') {
 		}
 		return noop
 	}
+	api.runTests = () => definedTests.forEach(t => t())
 	api.types = typeCheck.types
 	Object.keys(api.types).forEach(key => api[key] = api.types[key])
 }
@@ -63,6 +65,7 @@ if (mode === 'off') {
 		f.test = () => f
 		return f
 	}
+	api.runTests = noop
 	api.precon 	= noop
 	api.postcon = noop
 	api.param 	= curryNoop

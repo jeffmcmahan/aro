@@ -2,6 +2,7 @@
 
 const {isAsync} = require('./utils')
 const callStack = require('./call-stack')
+const definedTests = require('./defined-tests')
 
 const syncCall = (f, call, ...args) => {
 	let returned = f(...args)
@@ -60,21 +61,23 @@ module.exports = (function __fn__ (f) {
 
 	// Create the test definition interface.
 	indirectFunc.test = (test => {
-		const failMsg = (
-			`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`
-		)
-		if (isAsync(test)) {
-			test(indirectFunc).then(r => {
-				if (!r) {
+		definedTests.push(() => {
+			const failMsg = (
+				`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`
+			)
+			if (isAsync(test)) {
+				test(indirectFunc).then(r => {
+					if (!r) {
+						console.log(failMsg)
+					}
+				}).catch(e => {
 					console.log(failMsg)
-				}
-			}).catch(e => {
+					console.log(e)
+				})
+			} else if (!test(indirectFunc)) {
 				console.log(failMsg)
-				console.log(e)
-			})
-		} else if (!test(indirectFunc)) {
-			console.log(failMsg)
-		}
+			}
+		})
 		return indirectFunc
 	})
 
