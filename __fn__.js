@@ -43,27 +43,27 @@ const asyncCall = (f, call, ...args) => {
 	})
 }
 
+const testFailMsg = (test, f) => (
+	console.log(`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`)
+)
+
 const createTest = (f, indirectFunc) => test => {
 
 	// Stores a test function to be executed later via the runTests()
 	// API function.
 
 	definedTests.push(() => {
-		let pass = true
 		if (isAsync(test)) {
 			test(indirectFunc).then(r => {
 				if (!r) {
-					pass = false
+					testFailMsg(test, f)
 				}
 			}).catch(e => {
-				pass = false
 				console.log(e)
+				testFailMsg(test, f)
 			})
 		} else if (!test(indirectFunc)) {
-			pass = false
-		}
-		if (!pass) {
-			console.log(`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`)
+			testFailMsg(test, f)
 		}
 	})
 	return indirectFunc
