@@ -1,6 +1,6 @@
 'use strict'
 
-const callStack = require('../call-stack')
+const {callStack} = require('../state')
 const massNouns = ['void', 'null', 'undefined']
 const vowels = 'aeiou'
 

@@ -1,15 +1,14 @@
 'use strict'
 
 const {isAsync} = require('./utils')
-const callStack = require('./call-stack')
-const definedTests = require('./defined-tests')
+const {callStack, definedTests, mocks} = require('./state')
 
-const syncCall = (f, call, ...args) => {
+const syncCall = (call, ...args) => {
 
 	// Runs a synchronous function, then checks its return type 
 	// and its postconditions.
 
-	let returned = f(...args)
+	const returned = call.fn(...args)
 	if (call.type) {
 		(call.type(returned))
 	}
@@ -19,13 +18,13 @@ const syncCall = (f, call, ...args) => {
 	return returned
 }
 
-const asyncCall = (f, call, ...args) => {
+const asyncCall = (call, ...args) => {
 
 	// Runs an asynchronous function, then checks its return/resolve
 	// type and its postconditions.
 
 	return new Promise((resolve, reject) => {
-		f(...args).then(resolved => {
+		call.fn(...args).then(resolved => {
 			callStack.push(call)
 			if (call.type) {
 				(call.type(resolved))
@@ -44,7 +43,7 @@ const asyncCall = (f, call, ...args) => {
 }
 
 const testFailMsg = (test, f) => (
-	console.log(`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`)
+	`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`
 )
 
 const createTest = (f, indirectFunc) => test => {
@@ -52,20 +51,20 @@ const createTest = (f, indirectFunc) => test => {
 	// Stores a test function to be executed later via the runTests()
 	// API function.
 
-	definedTests.push(() => {
-		if (isAsync(test)) {
-			test(indirectFunc).then(r => {
-				if (!r) {
-					testFailMsg(test, f)
-				}
-			}).catch(e => {
-				console.log(e)
-				testFailMsg(test, f)
-			})
-		} else if (!test(indirectFunc)) {
-			testFailMsg(test, f)
+	const theTest = async () => {
+		try {
+			if (!(await test(indirectFunc))) {
+				console.log(testFailMsg(test, f))
+				return false
+			}
+		} catch (e) {
+			console.log(e)
+			console.log(testFailMsg(test, f))
+			return false
 		}
-	})
+		return true // Test passed without error.
+	}
+	definedTests.push(theTest)
 	return indirectFunc
 }
 
@@ -75,34 +74,29 @@ module.exports = (function __fn__ (f) {
 	const _isAsync = isAsync(f)
 
 	// Record a mock function, to be used if present.
-	let mock = null
+	mocks.set(f, null)
 
 	// Return the wrapper function that gets called.
 	const indirectFunc = ((...args) => {
 		const call = {
 			args,
-			fn: (mock || f),
+			fn: (mocks.get(f) || f),
 			pre: 0,
 			post: []
 		}
 		callStack.push(call) // Add the invocation to the call stack.
 
 		// Execute the function and save the result.
-		const result = _isAsync 
-			? asyncCall((mock || f), call, ...args) 
-			: syncCall((mock || f), call, ...args)
+		const result = _isAsync
+			? asyncCall(call, ...args) 
+			: syncCall(call, ...args)
 		
 		callStack.pop() // Remove from the call stack.
 		return result
 	}).bind(void 0)
 
 	// Define the mock-creation API.
-	indirectFunc.mock = (mockFunc => {
-		mock = (...args) => {
-			mock = null
-			return mockFunc(...args)
-		}
-	})
+	indirectFunc.mock = (mockFn => mocks.set(f, (...args) => mockFn(...args)))
 
 	// Define the test definition API.
 	indirectFunc.test = createTest(f, indirectFunc)

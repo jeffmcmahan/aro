@@ -29,7 +29,7 @@ nodeAssert.throws(() => test2(1), ({message}) => {
 	const firstStackLn = (
 		message.split('\n').map(ln => ln.trim()).filter(ln => !ln.indexOf('at ')).shift()
 	)
-	return firstStackLn.includes('at arg ')
+	return firstStackLn.includes('at Object.arg ')
 })
 
 // Lets make sure that recursion works.

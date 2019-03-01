@@ -1,8 +1,7 @@
 'use strict'
 
 const typeCheck = require('protocheck')
-const callStack = require('./call-stack')
-const definedTests = require('./defined-tests')
+const {callStack, definedTests, mocks} = require('./state')
 const error = require('./utils/error')
 const mode = require('./utils/mode')()
 const noop = () => {}
@@ -11,7 +10,9 @@ const api = {}
 
 // Development/Debug Mode
 if (mode === 'on') {
+
 	api.fn = require('./__fn__')
+
 	api.param = val => __Type => {
 		if (typeCheck(val, __Type)) {
 			return noop
@@ -21,6 +22,7 @@ if (mode === 'on') {
 			error.paramType(expectedTypeName, valueTypeName, new Error())
 		)
 	}
+
 	api.precon = f => {
 		const call = callStack.slice(-1)[0]
 		call.pre++
@@ -32,6 +34,7 @@ if (mode === 'on') {
 			throw new Error(error.precondition(call.pre, e))
 		}
 	}
+
 	api.postcon = f => {
 		const call = callStack.slice(-1)[0]
 		const conditionCheck = returnVal => {
@@ -43,6 +46,7 @@ if (mode === 'on') {
 		}
 		callStack.slice(-1)[0].post.push(conditionCheck)
 	}
+
 	api.returns = __Type => {
 		callStack.slice(-1)[0].type = val => {
 			if (!typeCheck(val, __Type)) {
@@ -54,7 +58,21 @@ if (mode === 'on') {
 		}
 		return noop
 	}
-	api.runTests = () => definedTests.forEach(t => t())
+
+	api.runTests = async () => {
+		await new Promise(r => setTimeout(r, 1))
+		console.log(`Running ${definedTests.length} tests.\n`)
+		for (let test of definedTests) {
+			mocks.clear()
+			if (!await test()) {
+				return mocks.clear()
+			}
+			console.log('  .')
+		}
+		mocks.clear()
+		console.log('\nTests completed.')
+	}
+
 	api.types = typeCheck.types
 	Object.keys(api.types).forEach(key => api[key] = api.types[key])
 }
