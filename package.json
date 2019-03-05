@@ -4,11 +4,14 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test": "npm run test:flag && npm run test:node_env && npm run test:production",
+		"test": "npm run test:flag && npm run test:node_env && npm run test:production && npm run test:build",
 		"test:production": "node ./tests/production",
 		"test:flag": "node ./tests/development --development",
 		"test:node_env": "NODE_ENV=development node ./tests/development",
-		"test:inspect": "node inspect ./tests/development"
+		"test:inspect": "node inspect ./tests/development",
+		"test:development-build": "NODE_ENV=development node ./tests/build-tool",
+		"test:production-build": "node ./tests/build-tool",
+		"test:build": "npm run test:development-build && sleep 2s && npm run test:production-build"
 	},
 	"author": "Jeff McMahan",
 	"license": "MIT",

@@ -1,44 +1,48 @@
 'use strict'
 
-const {success, fail} = require('./utils')
-const {fn, U, returns} = require('../../index')
+const assert = require('assert')
+const {fn, returns, U} = require('../../index')
 
-// Union with a String returned.
 const test1 = fn (() => {
+
+	// Union with a String returned.
 
 	returns (U(String, Number))
 
 	return ''
 })
 
-success(test1)
+assert.doesNotThrow(test1)
 
-// Union with a Number returned.
 const test2 = fn(() => {
+
+	// Union with a Number returned.
 
 	returns (U(String, Number)) 
 
 	return 0
 })
 
-success(test2)
+assert.doesNotThrow(test2)
 
-// Union with Void returned.
 const test3 = fn (() => {
+
+	// Union with Void returned.
 
 	returns (U(String, Number))
 	
 	// No return statement here.
 })
 
-fail(test3, 'Function of type U(String, Number) returned undefined')
+assert.throws(test3, /Function of type U\(String, Number\) returned undefined/)
 
-// Union with Boolean returned.
 const test4 = fn (() => {
+
+	// Union with Boolean returned.
 
 	returns (U(String, Number))
 
 	return false
 })
 
-fail(test4, 'Function of type U(String, Number) returned a Boolean')
+assert.throws(test4, /Function of type U\(String, Number\) returned a Boolean/)

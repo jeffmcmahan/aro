@@ -1,10 +1,11 @@
 'use strict'
 
-const {success} = require('./utils')
-const {fn, param, Any, returns} = require('../../index')
+const assert = require('assert')
+const {fn, param, returns, Any} = require('../../index')
 
-// This should always work. There are no checks.
 const test1 = fn (foo => {
+
+	// This should always work. There are no checks.
 
 	param   (foo)(Any)
 	returns (Any)
@@ -12,7 +13,7 @@ const test1 = fn (foo => {
 	return new Date()
 })
 
-success(test1)
-success(() => test1(0))
-success(() => test1(true))
-success(() => test1({}))
+assert.doesNotThrow(test1)
+assert.doesNotThrow(() => test1(0))
+assert.doesNotThrow(() => test1(true))
+assert.doesNotThrow(() => test1({}))

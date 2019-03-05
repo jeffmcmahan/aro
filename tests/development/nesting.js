@@ -1,22 +1,24 @@
 'use strict'
 
-const nodeAssert = require('assert')
+const assert = require('assert')
 const {fn, returns} = require('../../index')
 
-// Plaino fn() function here.
 const inside = fn (() => {
+
+	// Plaino fn() function here.
 
 	returns (Number)
 	
 	return 5
 })
 
-// A 3-deep nested fn(), calling another, 2-deep.
 const outside = fn (fn ( fn (() => {
+
+	// A 3-deep nested fn(), calling another, 2-deep.
 
 	returns (Function)
 
 	return fn( inside )
 })))
 
-nodeAssert(outside()() === 5)
+assert(outside()() === 5)

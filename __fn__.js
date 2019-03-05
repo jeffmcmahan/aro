@@ -1,7 +1,7 @@
 'use strict'
 
-const {isAsync} = require('./utils')
-const {callStack, definedTests, mocks} = require('./state')
+const {callStack, tests, mocks} = require('./state')
+const isAsync = require('./utils/is-async')
 
 const syncCall = (call, ...args) => {
 
@@ -64,7 +64,7 @@ const createTest = (f, indirectFunc) => test => {
 		}
 		return true // Test passed without error.
 	}
-	definedTests.push(theTest)
+	tests.push(theTest)
 	return indirectFunc
 }
 

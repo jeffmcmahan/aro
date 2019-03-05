@@ -1,24 +1,26 @@
 'use strict'
 
-const {success, fail} = require('./utils')
-const {fn, Void, returns} = require('../../index')
+const assert = require('assert')
+const {fn, returns, Void} = require('../../index')
 
-// Let implicit return produce undefined.
 const test1 = fn (() => {
+
+	// Let implicit return produce undefined.
 
 	returns (Void)
 
 	// No return statement here.
 })
 
-success(test1)
+assert.doesNotThrow(test1)
 
-// Void with a return value should fail.
 const test2 = fn (() => {
+
+	// Void with a return value should fail.
 
 	returns (Void)
 
 	return ''
 })
 
-fail(test2, 'Function of type Void returned a String')
+assert.throws(test2, /Function of type Void returned a String/)

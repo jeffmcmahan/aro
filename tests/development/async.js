@@ -1,10 +1,11 @@
 'use strict'
 
-const nodeAssert = require('assert')
-const {fn, param, precon, postcon, returns} = require('../../index')
+const assert = require('assert')
+const {fn, param, returns, precon, postcon} = require('../../index')
 
-// Call syncFunc before returning to interrupt the stack.
 const asyncFunc = fn (() => {
+
+	// Call syncFunc before returning to interrupt the stack.
 
 	returns (Promise)
 
@@ -12,18 +13,20 @@ const asyncFunc = fn (() => {
     return new Promise(r => setTimeout(r, 100))
 })
 
-// Plaino sync function to go between async calls in stack.
 const syncFunc = fn (() => {
+
+	// Plaino sync function to go between async calls in stack.
 
 	returns (String)
 
 	return 'foo'
 })
 
-// An async function that awaits async work and return sync.
-// The idea is to mix async and sync in the stack and see that \
-// everything still works okay.
 const test = fn (async (fooArg) => {
+
+	// An async function that awaits async work and return sync.
+	// The idea is to mix async and sync in the stack and see that \
+	// everything still works okay.
 
 	param   (fooArg)(String)
 	returns (String)
@@ -38,5 +41,5 @@ const test = fn (async (fooArg) => {
 
 module.exports = (async () => {
 	const v = await test('foo')
-	nodeAssert(v === 'foo')
+	assert(v === 'foo')
 })()

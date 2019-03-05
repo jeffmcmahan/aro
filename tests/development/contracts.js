@@ -35,5 +35,3 @@ assert.throws(
 	e => e.message.includes('Post-condition r => !isNaN(r) failed')
 )
 assert.doesNotThrow(() => postTest(5))
-
-console.log('Code contract tests passed.')

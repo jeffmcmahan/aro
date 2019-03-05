@@ -1,31 +1,33 @@
 'use strict'
 
-const {success, fail} = require('./utils')
+const assert = require('assert')
 const {fn, param, returns} = require('../../index')
 const dict = Object.create(null)
 
-// Return type.
 const test1 = fn (() => {
+
+	// Return type.
 
 	returns	(String)
 
 	return ''
 })
 
-success(test1)
+assert.doesNotThrow(test1)
 
-// Parameter type.
 const test2 = fn (foo => {
+
+	// Parameter type.
 
 	param 	(foo)(String)
 
 	return ''
 })
 
-success(() => test2(''))
-fail(() => test2(), 	'A String parameter was of type undefined')
-fail(() => test2(null), 'A String parameter was of type null')
-fail(() => test2(2), 	'A String parameter was of type Number')
-fail(() => test2(false),'A String parameter was of type Boolean')
-fail(() => test2({}), 	'A String parameter was of type Object')
-fail(() => test2(dict), 'A String parameter was of type Dictionary')
+assert.doesNotThrow(() => test2(''))
+assert.throws(test2, /A String parameter was of type undefined/)
+assert.throws(() => test2(null), 	/A String parameter was of type null/)
+assert.throws(() => test2(2), 		/A String parameter was of type Number/)
+assert.throws(() => test2(false),	/A String parameter was of type Boolean/)
+assert.throws(() => test2({}), 		/A String parameter was of type Object/)
+assert.throws(() => test2(dict), 	/A String parameter was of type Dictionary/)

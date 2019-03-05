@@ -1,15 +1,13 @@
 'use strict'
 
 const typeCheck = require('protocheck')
-const {callStack, definedTests, mocks} = require('./state')
+const state = require('./state')
 const error = require('./utils/error')
-const mode = require('./utils/mode')()
-const noop = () => {}
-const curryNoop = () => noop
+const noop = (() => void 0)
 const api = {}
 
 // Development/Debug Mode
-if (mode === 'on') {
+if (state.mode === 'on') {
 
 	api.fn = require('./__fn__')
 
@@ -24,7 +22,7 @@ if (mode === 'on') {
 	}
 
 	api.precon = f => {
-		const call = callStack.slice(-1)[0]
+		const call = state.callStack.slice(-1)[0]
 		call.pre++
 		try {
 			if (!f()) {
@@ -36,7 +34,7 @@ if (mode === 'on') {
 	}
 
 	api.postcon = f => {
-		const call = callStack.slice(-1)[0]
+		const call = state.callStack.slice(-1)[0]
 		const conditionCheck = returnVal => {
 			if (!f(returnVal)) {
 				throw new Error(
@@ -44,11 +42,11 @@ if (mode === 'on') {
 				)
 			}
 		}
-		callStack.slice(-1)[0].post.push(conditionCheck)
+		state.callStack.slice(-1)[0].post.push(conditionCheck)
 	}
 
 	api.returns = __Type => {
-		callStack.slice(-1)[0].type = val => {
+		state.callStack.slice(-1)[0].type = val => {
 			if (!typeCheck(val, __Type)) {
 				const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, __Type)
 				throw new TypeError(
@@ -61,16 +59,15 @@ if (mode === 'on') {
 
 	api.runTests = async () => {
 		await new Promise(r => setTimeout(r, 1))
-		console.log(`Running ${definedTests.length} tests.\n`)
-		for (let test of definedTests) {
-			mocks.clear()
+		const allTests = state.tests.entries()
+		for (const [i, test] of allTests) {
+			state.mocks.clear()
+			await new Promise(r => setTimeout(r, 25))
 			if (!await test()) {
-				return mocks.clear()
+				return state.mocks.clear()
 			}
-			console.log('  .')
 		}
-		mocks.clear()
-		console.log('\nTests completed.')
+		state.mocks.clear()
 	}
 
 	api.types = typeCheck.types
@@ -78,19 +75,27 @@ if (mode === 'on') {
 }
 
 // Production Mode
-if (mode === 'off') {
+if (state.mode === 'off') {
 	api.fn = f => {
-		f.test = () => f
-		f.mock = () => f
+		f.test = (() => f)
+		f.mock = (() => f)
 		return f
 	}
-	api.runTests = noop
+	api.runTests = () => Promise.resolve()
 	api.precon 	= noop
 	api.postcon = noop
-	api.param 	= curryNoop
+	api.param 	= (() => noop)
 	api.returns = noop
 	api.types	= {}
-	Object.keys(typeCheck.types).forEach(key => api[key] = api.types[key] = noop)
+	Object.keys(typeCheck.types).forEach(key => (
+		api[key] = api.types[key] = noop
+	))
+}
+
+// If running node, enable tests and expose the build tool.
+if (state.engine() === 'node') {
+	require('./enable-tests')
+	api.build = require('./build')
 }
 
 Object.freeze(api.types)
