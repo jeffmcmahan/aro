@@ -1,7 +1,7 @@
 'use strict'
 
 const protocheck = require('protocheck') // Test third party includes.
-const {runTests} = require('../../../index')
+const {runTests} = require('../../../index.js')
 const foo = require('./foo')
 const bar = require('./nested/bar')
 
@@ -13,7 +13,5 @@ runTests().then(() => {
 	}, 100)
 }).catch(e => {
 	console.log(e)
-	setTimeout(() => {
-		document.body.innerHTML = ('Error: ' + e.message)
-	}, 100)
+	setTimeout(() => document.body.innerHTML = ('Error: ' + e.message), 100)
 })

@@ -95,7 +95,6 @@ if (state.mode === 'off') {
 // If running node, enable tests and expose the build tool.
 if (state.engine() === 'node') {
 	require('./enable-tests')
-	api.build = require('./build')
 }
 
 Object.freeze(api.types)

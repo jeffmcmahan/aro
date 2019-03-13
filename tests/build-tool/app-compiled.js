@@ -105,89 +105,7 @@ module.exports = (function __fn__ (f) {
 	return indirectFunc
 })
 
-},{"./state":11,"./utils/is-async":16}],2:[function(require,module,exports){
-
-
-'use strict'
-
-const state = require('./state')
-const path = require('path')
-const fs = require('fs')
-const sh = require('child_process').execSync
-
-const read = (dir) => {
-
-	// Recursively reads the given directory and returns an array
-	// of absolute file paths (no directory paths).
-
-	const files = fs.readdirSync(dir).filter(f => f[0] !== '.').map(f => path.join(dir, f))
-	files.forEach(fpath => {
-		const item = fs.statSync(fpath)
-		if (item.isDirectory()) {
-			files.push(...read(fpath))
-		}
-	})
-	return files
-}
-
-const appendTests = dir => {
-
-	// Read the .js files and if there is a corresponding .test.js file,
-	// read it, and append it to the JS file.
-
-	const files = read(dir)
-	files.forEach(fpath => {
-		const isTestFile = fpath.slice(-8) === '.test.js'
-		const srcFile = fpath.slice(0, -8) + '.js'
-		const hasSrcFile = files.includes(srcFile)
-		if (isTestFile && hasSrcFile) {
-			fs.appendFileSync(srcFile, fs.readFileSync(fpath, 'utf8'))
-		}
-	})
-}
-
-module.exports = (projectRoot) => {
-
-	// Synchronously creates a browser build of the project in the given dir.
-
-	if (typeof projectRoot !== 'string') {
-		throw new TypeError('Project root must be a string')
-	}
-
-	const srcMain = require.resolve(projectRoot)
-	const rootDir = path.dirname(srcMain)
-	const buildDir = (rootDir + '.build')
-	const buildMain = path.join(buildDir, path.basename(srcMain))
-	const compiled = path.join(
-		path.dirname(rootDir), 
-		path.basename(rootDir) + '.compiled.js'
-	)
-
-	// Create the temporary build directory.
-	sh(`rm -rf ${buildDir} && mkdir ${buildDir}`)
-
-	// Copy the source code into the build directory
-	// Todo: Avoid copying node_modules. 
-	sh(`cp -r ${rootDir}/* ${buildDir}`)
-
-	// Add the test files to the build.
-	if (state.mode === 'on') {
-		appendTests(buildDir)
-	}
-
-	// Todo: Replace browserify with the *simplest possible* CommonJS 
-	// bundling implementation I can devise.
-	sh(`browserify ${buildMain} > ${compiled}`)
-	sh(`rm -rf ${buildDir}`)
-
-	// Flip the development switch if appropriate.
-	if (state.mode === 'on') {
-		const compiledFile = fs.readFileSync(compiled, 'utf8')
-		fs.writeFileSync(compiled, `window['--development'] = true;\n${compiledFile}`)
-	}
-}
-
-},{"./state":11,"child_process":17,"fs":17,"path":18}],3:[function(require,module,exports){
+},{"./state":10,"./utils/is-async":15}],2:[function(require,module,exports){
 'use strict'
 
 const fs = require('fs')
@@ -213,7 +131,7 @@ if (state.mode === 'on') {
 	}
 }
 
-},{"./state":11,"fs":17,"path":18}],4:[function(require,module,exports){
+},{"./state":10,"fs":16,"path":17}],3:[function(require,module,exports){
 'use strict'
 
 const typeCheck = require('protocheck')
@@ -311,13 +229,12 @@ if (state.mode === 'off') {
 // If running node, enable tests and expose the build tool.
 if (state.engine() === 'node') {
 	require('./enable-tests')
-	api.build = require('./build')
 }
 
 Object.freeze(api.types)
 module.exports = Object.freeze(api)
 
-},{"./__fn__":1,"./build":2,"./enable-tests":3,"./state":11,"./utils/error":15,"protocheck":7}],5:[function(require,module,exports){
+},{"./__fn__":1,"./enable-tests":2,"./state":10,"./utils/error":14,"protocheck":6}],4:[function(require,module,exports){
 'use strict'
 
 const typeCheck = require('./typeCheck')
@@ -340,12 +257,12 @@ module.exports = (value, expectedType) => {
 	return {expectedTypeName, valueTypeName}
 }
 
-},{"./typeCheck":9}],6:[function(require,module,exports){
+},{"./typeCheck":8}],5:[function(require,module,exports){
 'use strict'
 
 module.exports = Math.random()
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict'
 
 const typeCheck = require('./typeCheck')
@@ -358,7 +275,7 @@ typeCheck.failureDetail = require('./failureDetail')
 
 module.exports = typeCheck
 
-},{"./failureDetail":5,"./typeCheck":9,"./types":10}],8:[function(require,module,exports){
+},{"./failureDetail":4,"./typeCheck":8,"./types":9}],7:[function(require,module,exports){
 'use strict'
 
 const objProto = Object.prototype
@@ -396,7 +313,7 @@ module.exports = (proto, v) => {
 	}
 	return false
 }
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict'
 
 const hmac = require('./hmac')
@@ -415,7 +332,7 @@ module.exports = (v, Type) => {
 
 	return protoCheck(Type.prototype, v)
 }
-},{"./hmac":6,"./protoCheck":8}],10:[function(require,module,exports){
+},{"./hmac":5,"./protoCheck":7}],9:[function(require,module,exports){
 'use strict'
 
 const protoCheck = require('./protoCheck')
@@ -508,7 +425,7 @@ module.exports = {
 	Any, Undefined, Null, Void, Dictionary, Maybe, Tuple, U, T, ArrayT
 }
 
-},{"./hmac":6,"./protoCheck":8,"./typeCheck":9}],11:[function(require,module,exports){
+},{"./hmac":5,"./protoCheck":7,"./typeCheck":8}],10:[function(require,module,exports){
 (function (process){
 'use strict'
 
@@ -548,18 +465,22 @@ module.exports = (() => {
 })()
 
 }).call(this,require('_process'))
-},{"_process":19}],12:[function(require,module,exports){
+},{"_process":18}],11:[function(require,module,exports){
 'use strict'
 
-const {fn} = require('../../../index')
+const {fn} = require('../../../index.js')
 
 module.exports = fn (() => {})
 
-},{"../../../index":4}],13:[function(require,module,exports){
+},{"../../../index.js":3}],12:[function(require,module,exports){
+'use strict'
+
+module.exports = () => {}
+},{}],13:[function(require,module,exports){
 'use strict'
 
 const protocheck = require('protocheck') // Test third party includes.
-const {runTests} = require('../../../index')
+const {runTests} = require('../../../index.js')
 const foo = require('./foo')
 const bar = require('./nested/bar')
 
@@ -571,16 +492,10 @@ runTests().then(() => {
 	}, 100)
 }).catch(e => {
 	console.log(e)
-	setTimeout(() => {
-		document.body.innerHTML = ('Error: ' + e.message)
-	}, 100)
+	setTimeout(() => document.body.innerHTML = ('Error: ' + e.message), 100)
 })
 
-},{"../../../index":4,"./foo":12,"./nested/bar":14,"protocheck":7}],14:[function(require,module,exports){
-'use strict'
-
-module.exports = () => {}
-},{}],15:[function(require,module,exports){
+},{"../../../index.js":3,"./foo":11,"./nested/bar":12,"protocheck":6}],14:[function(require,module,exports){
 'use strict'
 
 const {callStack} = require('../state')
@@ -652,14 +567,14 @@ exports.paramType = (expected, actual, err) => {
 		filterStack(err.stack || err.message)
 	)
 }
-},{"../state":11}],16:[function(require,module,exports){
+},{"../state":10}],15:[function(require,module,exports){
 'use strict'
 
 module.exports = fn => /^async[\s\(]/.test(fn.toString().trim())
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function (process){
 // .dirname, .basename, and .extname methods are extracted from Node.js v8.11.1,
 // backported and transplited with Babel, with backwards-compat fixes
@@ -965,7 +880,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":19}],19:[function(require,module,exports){
+},{"_process":18}],18:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
