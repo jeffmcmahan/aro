@@ -58,11 +58,13 @@ if (state.mode === 'on') {
 	}
 
 	api.runTests = () => new Promise(resolve => {
+		let count = state.tests.length
 		const nextTest = () => {
 			state.mocks.clear()
 			if (state.tests.length) {
 				state.tests.shift()(nextTest)
 			} else {
+				console.log(`Ran ${count} tests.`)
 				resolve()
 			}
 		}

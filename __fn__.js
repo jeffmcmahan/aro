@@ -69,11 +69,9 @@ module.exports = (function __fn__ (f) {
 		return result
 	}).bind(void 0)
 
-	// Define the mock-creation API.
-	indirectFunc.mock = (mockFn => mocks.set(f, (...args) => mockFn(...args)))
-
-	// Define the test definition API.
-	indirectFunc.test = f => tests.push(f)
+	// Define the testing API.
+	indirectFunc.mock = mock => mocks.set(f, mock)
+	indirectFunc.test = test => tests.push(test)
 
 	return indirectFunc
 })
