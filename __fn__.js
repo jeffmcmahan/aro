@@ -42,32 +42,6 @@ const asyncCall = (call, ...args) => {
 	})
 }
 
-const testFailMsg = (test, f) => (
-	`\nTest failed: ${test.toString()}\n\nFor: fn (${f.toString()})\n`
-)
-
-const createTest = (f, indirectFunc) => test => {
-
-	// Stores a test function to be executed later via the runTests()
-	// API function.
-
-	const theTest = async () => {
-		try {
-			if (!(await test(indirectFunc))) {
-				console.log(testFailMsg(test, f))
-				return false
-			}
-		} catch (e) {
-			console.log(e)
-			console.log(testFailMsg(test, f))
-			return false
-		}
-		return true // Test passed without error.
-	}
-	tests.push(theTest)
-	return indirectFunc
-}
-
 module.exports = (function __fn__ (f) {
 
 	// Note whether it uses the "async" keyword.
@@ -99,7 +73,7 @@ module.exports = (function __fn__ (f) {
 	indirectFunc.mock = (mockFn => mocks.set(f, (...args) => mockFn(...args)))
 
 	// Define the test definition API.
-	indirectFunc.test = createTest(f, indirectFunc)
+	indirectFunc.test = f => tests.push(f)
 
 	return indirectFunc
 })

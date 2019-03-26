@@ -1,6 +1,6 @@
 {
 	"name": "aro",
-	"version": "0.8.0",
+	"version": "0.9.0",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
@@ -26,6 +26,12 @@
 		},
 		"parserOptions": {
 			"ecmaVersion": 8
+		},
+		"overrides": {
+			"files": ["*.test.js"],
+			"rules": {
+				"no-undef": "off"
+			}
 		}
 	},
 	"dependencies": {

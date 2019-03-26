@@ -1,9 +1,9 @@
 'use strict'
 
 // Store the console messages.
-console.logged = []
-console._log = console.log
-console.log = (...args) => console.logged.push(...args)
+// console.logged = []
+// console._log = console.log
+// console.log = (...args) => console.logged.push(...args)
 
 require('./any-type')
 require('./void-type')
@@ -17,4 +17,3 @@ require('./define-test')
 require('./mock')
 require('./stack')
 require('./async')
-require('./external')

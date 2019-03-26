@@ -1,5 +1,5 @@
 'use strict'
-
+ 
 const state = require('./state')
 const path = require('path')
 const fs = require('fs')
@@ -47,7 +47,6 @@ module.exports = (projectRoot) => {
 	const srcMain = require.resolve(projectRoot)
 	const rootDir = path.dirname(srcMain)
 	const buildDir = (rootDir + '-build')
-	const buildMain = path.join(buildDir, path.basename(srcMain))
 	const compiled = path.join(
 		path.dirname(rootDir), 
 		path.basename(rootDir) + '-compiled.js'

@@ -3,7 +3,7 @@
 const typeCheck = require('protocheck')
 const state = require('./state')
 const error = require('./utils/error')
-const noop = (() => void 0)
+const noop = () => void 0
 const api = {}
 
 // Development/Debug Mode
@@ -57,18 +57,17 @@ if (state.mode === 'on') {
 		return noop
 	}
 
-	api.runTests = async () => {
-		await new Promise(r => setTimeout(r, 1))
-		const allTests = state.tests.entries()
-		for (const [i, test] of allTests) {
+	api.runTests = () => new Promise(resolve => {
+		const nextTest = () => {
 			state.mocks.clear()
-			await new Promise(r => setTimeout(r, 25))
-			if (!await test()) {
-				return state.mocks.clear()
+			if (state.tests.length) {
+				state.tests.shift()(nextTest)
+			} else {
+				resolve()
 			}
 		}
-		state.mocks.clear()
-	}
+		setTimeout(nextTest, 1)
+	})
 
 	api.types = typeCheck.types
 	Object.keys(api.types).forEach(key => api[key] = api.types[key])
@@ -77,14 +76,14 @@ if (state.mode === 'on') {
 // Production Mode
 if (state.mode === 'off') {
 	api.fn = f => {
-		f.test = (() => f)
-		f.mock = (() => f)
+		f.test = () => f
+		f.mock = () => f
 		return f
 	}
 	api.runTests = () => Promise.resolve()
 	api.precon 	= noop
 	api.postcon = noop
-	api.param 	= (() => noop)
+	api.param 	= () => noop
 	api.returns = noop
 	api.types	= {}
 	Object.keys(typeCheck.types).forEach(key => (

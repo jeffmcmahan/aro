@@ -1,9 +1,9 @@
-module.exports.test(() => {
+module.exports.test(done => {
 	document.body.innerHTML += 'Test 1 ran. '
-	return true
+	done()
 })
 
-module.exports.test(() => {
+module.exports.test(done => {
 	document.body.innerHTML += 'Test 2 ran. '
-	return true
+	done()
 })
