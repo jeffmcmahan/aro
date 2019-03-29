@@ -70,11 +70,9 @@ module.exports = (function __fn__ (f) {
 		return result
 	}).bind(void 0)
 
-	// Define the mock-creation API.
-	indirectFunc.mock = (mockFn => mocks.set(f, (...args) => mockFn(...args)))
-
-	// Define the test definition API.
-	indirectFunc.test = f => tests.push(f)
+	// Define the testing API.
+	indirectFunc.mock = mock => mocks.set(f, mock)
+	indirectFunc.test = test => tests.push(test)
 
 	return indirectFunc
 })
@@ -96,7 +94,7 @@ if (state.mode === 'on') {
 		if (isProjectFile) {
 			try {
 				const tests = fs.readFileSync(fname.slice(0,-3) + '.test.js', 'utf8')
-				content += tests ? `;${tests};` : ''
+				content += tests ? `;(() => {${tests}})();` : ''
 			} catch (e) {
 				// No tests defined.
 			}
@@ -111,7 +109,7 @@ if (state.mode === 'on') {
 const typeCheck = require('protocheck')
 const state = require('./state')
 const error = require('./utils/error')
-const noop = (() => void 0)
+const noop = () => void 0
 const api = {}
 
 // Development/Debug Mode
@@ -166,11 +164,13 @@ if (state.mode === 'on') {
 	}
 
 	api.runTests = () => new Promise(resolve => {
+		let count = state.tests.length
 		const nextTest = () => {
 			state.mocks.clear()
 			if (state.tests.length) {
 				state.tests.shift()(nextTest)
 			} else {
+				console.log(`Ran ${count} tests.`)
 				resolve()
 			}
 		}

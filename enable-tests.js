@@ -14,7 +14,7 @@ if (state.mode === 'on') {
 		if (isProjectFile) {
 			try {
 				const tests = fs.readFileSync(fname.slice(0,-3) + '.test.js', 'utf8')
-				content += tests ? `;${tests};` : ''
+				content += tests ? `;(() => {${tests}})();` : ''
 			} catch (e) {
 				// No tests defined.
 			}

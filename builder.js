@@ -31,7 +31,7 @@ const appendTests = dir => {
 		const srcFile = fpath.slice(0, -8) + '.js'
 		const hasSrcFile = files.includes(srcFile)
 		if (isTestFile && hasSrcFile) {
-			fs.appendFileSync(srcFile, fs.readFileSync(fpath, 'utf8'))
+			fs.appendFileSync(srcFile, ';(() => {' + fs.readFileSync(fpath, 'utf8') + '})();')
 		}
 	})
 }
