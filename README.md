@@ -367,3 +367,30 @@ const asyncIdentity = fn (async x => {
 
 asyncIdentity(5) // pass
 ```
+
+## ESLint Config
+
+```js
+{
+    // Let ESLint know about the globals and locally given variables.
+    "globals": {
+        "main": true,
+        "fn": true,
+        "param": true,
+        "returns": true,
+        "precon": true,
+        "postcon": true,
+        "local": true
+    },
+
+     // Treat .test.js files specially.
+    "overrides": {
+        "files": ["*.test.js"],
+        "globals": {
+            "test": true,
+            "mock": true,
+            "local": true
+        }
+    }
+}
+```
