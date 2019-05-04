@@ -357,7 +357,7 @@ Within `async` functions, Aro will respect the use of the `return` keyword, so t
 ```js
 'use aro'
 
-exports.asyncIdentity = fn (async x => {
+const asyncIdentity = fn (async x => {
 
     param   (x)(Number)
     returns (Number)
