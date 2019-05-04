@@ -1,102 +1,19 @@
+#!/usr/bin/env node
 'use strict'
 
-const typeCheck = require('protocheck')
-const state = require('./state')
-const error = require('./utils/error')
-const noop = () => void 0
-const api = {}
+const run = require('./run')
+const build = require('./build')
 
-// Development/Debug Mode
-if (state.mode === 'on') {
+// Gather and process the arguments.
+const [cmd, mode, rootFile, outputDir] = process.argv.slice(2)
+process.argv = [...process.argv.slice(0,2), ...process.argv.slice(5)]
+process.env.ARO_ENV = mode
 
-	api.fn = require('./__fn__')
-
-	api.param = val => __Type => {
-		if (typeCheck(val, __Type)) {
-			return noop
-		}
-		const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, __Type)
-		throw new TypeError(
-			error.paramType(expectedTypeName, valueTypeName, new Error())
-		)
-	}
-
-	api.precon = f => {
-		const call = state.callStack.slice(-1)[0]
-		call.pre++
-		try {
-			if (!f()) {
-				throw new Error(error.precondition(call.pre, new Error()))
-			}
-		} catch (e) {
-			throw new Error(error.precondition(call.pre, e))
-		}
-	}
-
-	api.postcon = f => {
-		const call = state.callStack.slice(-1)[0]
-		const conditionCheck = returnVal => {
-			if (!f(returnVal)) {
-				throw new Error(
-					`Post-condition ${f.toString()} failed in: fn (${call.fn.toString()})`
-				)
-			}
-		}
-		state.callStack.slice(-1)[0].post.push(conditionCheck)
-	}
-
-	api.returns = __Type => {
-		state.callStack.slice(-1)[0].type = val => {
-			if (!typeCheck(val, __Type)) {
-				const {valueTypeName, expectedTypeName} = typeCheck.failureDetail(val, __Type)
-				throw new TypeError(
-					error.returnType(expectedTypeName, valueTypeName, new Error())
-				)
-			}
-		}
-		return noop
-	}
-
-	api.runTests = () => new Promise(resolve => {
-		let count = state.tests.length
-		const nextTest = () => {
-			state.mocks.clear()
-			if (state.tests.length) {
-				state.tests.shift()(nextTest)
-			} else {
-				console.log(`Ran ${count} tests.`)
-				resolve()
-			}
-		}
-		setTimeout(nextTest, 1)
-	})
-
-	api.types = typeCheck.types
-	Object.keys(api.types).forEach(key => api[key] = api.types[key])
+if (cmd === 'run') {
+	module.exports = run(mode, rootFile)
+} else if (cmd === 'build') {
+	build(mode, rootFile, outputDir) // Not working yet!
+} else {
+	process.stderr.write(`Invalid aro command "${cmd}": use "run" or "build".\n`)
+	process.exit(1)
 }
-
-// Production Mode
-if (state.mode === 'off') {
-	api.fn = f => {
-		f.test = () => f
-		f.mock = () => f
-		return f
-	}
-	api.runTests = () => Promise.resolve()
-	api.precon 	= noop
-	api.postcon = noop
-	api.param 	= () => noop
-	api.returns = noop
-	api.types	= {}
-	Object.keys(typeCheck.types).forEach(key => (
-		api[key] = api.types[key] = noop
-	))
-}
-
-// If running node, enable tests and expose the build tool.
-if (state.engine() === 'node') {
-	require('./enable-tests')
-}
-
-Object.freeze(api.types)
-module.exports = Object.freeze(api)
