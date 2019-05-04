@@ -40,7 +40,5 @@
 			}
 		}
 	},
-	"dependencies": {
-		"protocheck": "^0.1.10"
-	}
+	"dependencies": {}
 }
