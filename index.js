@@ -12,7 +12,7 @@ process.env.ARO_ENV = mode
 if (cmd === 'run') {
 	module.exports = run(mode, rootFile)
 } else if (cmd === 'build') {
-	build(mode, rootFile, outputDir) // Not working yet!
+	build(mode, rootFile, outputDir)
 } else {
 	process.stderr.write(`Invalid aro command "${cmd}": use "run" or "build".\n`)
 	process.exit(1)

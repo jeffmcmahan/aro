@@ -9,11 +9,10 @@ module.exports = (cmd, mode) => {
 
 	const toolsFile = construct(mode)
 	if (cmd === 'build') {
-		return toolsFile + 
-		'\nsetTimeout(aro.testFns.runTests);'
+		return toolsFile + '\nsetTimeout(aro.testFns.runTests);'
 	}
 	if (cmd === 'run') {
-		const requirePath = __dirname + '/aro-tools-run.js'
+		const requirePath = `${__dirname}/aro-tools-${cmd}-${mode}.js`
 		fs.writeFileSync(requirePath, toolsFile)
 		return requirePath
 	}
