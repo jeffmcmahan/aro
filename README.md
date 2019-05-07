@@ -26,6 +26,8 @@ In general, the syntax is:
 aro [run|build] [dev|prod] ./file.js [--anyOtherArgs]
 ```
 
+An appopriate shebang for an executable Aro program might be: `#!/usr/bin/env aro run prod`
+
 N.b.: `process.env.ARO_ENV` will indicate `dev` or `prod`.
 
 ## Aro JavaScript
