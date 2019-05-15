@@ -1,6 +1,7 @@
 {
 	"name": "aro",
-	"version": "0.12.0",
+	"type": "module",
+	"version": "0.13.0",
 	"description": "",
 	"main": "index.js",
 	"bin": "index.js",

@@ -1,55 +1,149 @@
-'use strict'
+import {dirname, join} from 'path'
+import sh from './utils/sh.js'
+import {writeFile, readFile, stat, readdir} from './utils/fs.js'
+import generateTools from './tools/generate.js'
+const log = console.log
 
-const path = require('path')
-const fs = require('fs')
-const sh = require('child_process').execSync
-const transforms = require('./transforms')
-const tools = require('./tools')
+const isMain = (root, fname) => {
 
-const read = dir => {
+	// Determine whether the given fname points to root index.js.
+
+	const relFname = fname.slice(root.length)
+	return (relFname === '/src/index.js')
+}
+
+const read = async dir => {
 
 	// Recursively reads the given directory and returns an array
 	// of absolute file paths (no directory paths).
 
-	const files = fs.readdirSync(dir).filter(f => f[0] !== '.').map(f => path.join(dir, f))
-	files.forEach(fpath => {
-		const item = fs.statSync(fpath)
-		if (item.isDirectory()) {
-			files.push(...read(fpath))
+	const items = (await readdir(dir))
+		.filter(f => !f.startsWith('.'))
+		.filter(fname => !fname.split('/').includes('node_modules'))
+		.map(f => join(dir, f))
+
+	const files = []
+	for (let fspath of items) {
+		const itemStat = await stat(fspath).catch(log)
+		if (itemStat.isDirectory()) {
+			files.push(...(await read(fspath).catch(log)))
+		} else {
+			files.push(fspath)
 		}
-	})
+	}
 	return files
 }
 
-module.exports = (mode, projectDir, outputDir) => {
+const removeCalls = content => {
 
-	// Synchronously creates a dev or prod build of the project.
+	// Comments out calls to fn, param, returns, etc.
 
-	if (typeof projectDir !== 'string') {
-		throw new Error('Project directory must be specified.')
+	return content
+		.replace(/\b(param\s*?\()/g, '// $1')
+		.replace(/\b(precon\s*?\()/g, '// $1')
+		.replace(/\b(returns\s*?\()/g, '// $1')
+		.replace(/\b(postcon\s*?\()/g, '// $1')
+		.replace(/\bfn(\s*?)\(/g, '/*fn*/$1(')
+}
+
+const prefix = (root, srcDir, outputDir, fname, content) => {
+
+	// Add definitions for local, main, and an import of the tools.
+
+	const relFname = fname.slice(srcDir.length)
+	const isTest = fname.endsWith('.test.js')
+	const prefixes = []
+	if (isTest) {
+		const id = relFname.slice(0, -8) + '.js'
+		prefixes.push(`const local = global.aro['${id}']`)
+		prefixes.push('const {test, mock} = global.aro.testFns')
+		prefixes.push(`import * as src from '.${id}'`)
+	} else {
+		prefixes.push(`const local = global.aro['${relFname}']`)
+		if (isMain(root, fname)) {
+			prefixes.push('let main = () => {}')
+			prefixes.push(`import './aro-tools.js'`)
+		}
 	}
-	if (typeof outputDir !== 'string') {
-		throw new Error('Output directory must be specified.')
-	}
+	return content.replace(`'use aro'\n`, prefixes.join('; ') + '\n')
+}
 
-	// Resolve the paths.
-	projectDir = path.join(process.cwd(), projectDir)
-	outputDir = path.join(process.cwd(), outputDir)
+const copyMain = (rootDir, fname, content) => {
 
-	// Prevent accidental destruction of source code.
-	if (projectDir === outputDir) {
-		throw new Error('Project dir and output dir can\'t be the same.')
-	}
+	// Add a statement to make main accessible from elsewhere.
 
-	// Copy the source code into the build directory
-	// Todo: Skip ./node_modules.
-	sh(`cp -R ${projectDir}/. ${outputDir}`)
+	return isMain(rootDir, fname)
+		? (content + '\nglobal.aro.main = main') 
+		: content
+}
 
-	read(projectDir).forEach(fname => {
-		let file = fs.readFileSync(fname, 'utf8')
-		file = transforms[mode](fname, file)
-		fs.writeFileSync(fname.replace(projectDir, outputDir), file)
-	})
+const addTests = (rootDir, fname, content) => {
 
-	fs.writeFileSync(`${outputDir}/aro-tools.js`, tools('build', mode))
+	// Add a statement to include all the test files.
+
+	return isMain(rootDir, fname)
+		? content + `\nimport './aro-tests.js'\nglobal.aro.testFns.runTests()` 
+		: content
+}
+
+const safelyWriteFile = async (outputFname, content) => {
+
+	// Write the given file to disk, ensuring that the parent dir
+	// exists beforehand.
+
+	await sh(`mkdir -p ${dirname(outputFname)}`).catch(log)
+	await writeFile(outputFname, content).catch(log)
+}
+
+const createTestFile = (srcDir, outputDir, fnames) => {
+
+	// Generates and saves a file which imports all the test files.
+
+	const srcFnames = fnames.filter(fname => fname.endsWith('.test.js'))
+	const relativeFnames = srcFnames.map(fname => fname.slice(srcDir.length))
+	const importStatements = relativeFnames.map(fname => `import '.${fname}'`)
+	const testsFname = join(outputDir, 'aro-tests.js')
+	return writeFile(testsFname, importStatements.join('\n')).catch(log)
+}
+
+const createToolsFile = (fnames, srcDir, outputDir, mode) => {
+
+	// Generate the tools code.
+
+	const toolsFname = join(outputDir, `aro-tools.js`)
+	const toolsCode = generateTools(srcDir, fnames, mode)
+	return writeFile(toolsFname, toolsCode).catch(log)
+}
+
+export default async (mode, root) => {
+
+	// Modify then copy src files to the ./aro-dev and ./aro-prod directories.
+
+	const srcDir = join(root, 'src')
+	const outputDir = join(root, mode)
+	
+	// Clear/create the output directory.
+	await sh(`rm -rf ${outputDir} && mkdir ${outputDir}`).catch(log)
+
+	// Read files, transform if required, and save to outputDir.
+	const fnames = await read(srcDir)
+	await Promise.all(fnames.map(async fname => {
+		let content = await readFile(fname, 'utf8').catch(log)
+		content = prefix(root, srcDir, outputDir, fname, content)
+		content = copyMain(root, fname, content)
+		if (mode === 'development') {
+			content = addTests(root, fname, content)
+		} else {
+			content = removeCalls(content)
+			if (isMain(root, fname)) {
+				content += '\nglobal.aro.main()'
+			}
+		}
+		const outputFname = join(outputDir, fname.slice(root.length + 4))
+		await safelyWriteFile(outputFname, content).catch(log)
+	}))
+
+	// Generate Aro-specific files that will be included.
+	await createTestFile(srcDir, outputDir, fnames).catch(log)
+	await createToolsFile(fnames, srcDir, outputDir, mode)
 }

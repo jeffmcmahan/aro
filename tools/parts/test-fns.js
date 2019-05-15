@@ -11,7 +11,7 @@ global.aro.testFns = (() => {
 				test(nextTest)
 			} else {
 				console.log(`Ran ${count} tests.`)
-				global.aro.__app__()
+				global.aro.main()
 			}
 		}
 		nextTest()

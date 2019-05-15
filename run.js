@@ -1,19 +1,8 @@
-'use strict'
+import {join} from 'path'
 
-const path = require('path')
+export default async (mode, root) => {
 
-module.exports = (mode, file) => {
+	// Execute the main file to run the app.
 
-	// Setup globals that are always available.
-
-	const toolsPath = require('./tools')('run', mode)
-	require(toolsPath)
-	require('./enhance-require')(mode)
-	if (mode === 'dev') {
-		process.nextTick(global.aro.testFns.runTests)
-	} else if (mode === 'prod') {
-		process.nextTick(() => global.aro.__app__())
-	}
-	const dir = file.startsWith('/') ? '' : process.cwd()
-	return require(path.join(dir, file))
+	return await import(join(root, mode, 'index.js'))
 }

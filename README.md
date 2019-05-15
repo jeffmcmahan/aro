@@ -2,37 +2,29 @@
 
 ## Introduction
 
-Aro is a meta-runtime for node.js and a sub-regular transform for browser applications. It provides meta-programming tools, including solutions for type checking, design-by-contract, testing, and mocking.
+Aro adds metaprogramming helpers to modern JS code, chiefly to make it easy to (i) test and mock complex behavior, (ii) create type checks, and (iii) enforce code contracts. The code that is generated can be run Node.js 12+, and in all major web browsers without modification.
 
-```sh
-sudo npm install aro -g
+```bash
+npm install aro -g
 ```
 
-On the server, run your app with `aro` instead of Node.js proper:
+Once installed, in any JS file that will use the helpers, include the `'use aro'` directive at the top. Then use Aro to run the project:
 
-```sh
-aro run dev ./foo.js
+```bash
+aro run development ./project-root --your-args
 ```
 
-To build for use in the browser, call the transform with `build`:
+Command line syntax is:
 
-```sh
-aro build dev ./foo.js ./build-tmp
+```bash
+aro [run|build] [development|production] ./project/root [--args]
 ```
 
-In general, the syntax is:
+<small>N.b.: Aro assumes that your app's main file is called `index.js` and does not rely on `package.json` for anything.</small>
 
-```sh
-aro [run|build] [dev|prod] ./file.js [--anyOtherArgs]
-```
+## Aro-Style Code
 
-An appopriate shebang for an executable Aro program might be: `#!/usr/bin/env aro run prod`
-
-N.b.: `process.env.ARO_ENV` will indicate `dev` or `prod`.
-
-## Aro JavaScript
-
-At the top of each file that will use Aro tools, add the `'use aro'` directive before any other material, including comments (only a BOM string is permitted). All of the meta-programming helpers are provided with valid javascript syntax:
+At the top of each file that will use Aro tools, add the `'use aro'` directive before any other material, including comments (only a BOM string is permitted). The meta-programming helpers are provided via normal JS syntax:
 
 ```js
 'use aro'
@@ -59,10 +51,10 @@ The `fn`-internal tools are:
 * `precon` enforces a precondition.
 * `postcon` enforces a postcondition.
 
-In `prod` mode, these values are all stripped out of the code, eliminating any performance overhead:
+These appear at the top of a function body as one contiguous block, mimicking the organization of JSDoc-style comments. In production mode, they are commented out of the code, eliminating any performance overhead, while leaving stacktrace line numbers in tact:
 
 ```js
-'use strict'
+'use aro'
 
 const foo = /*fn*/ (bar => {
 
@@ -82,13 +74,13 @@ The `main` variable is used to define the main app function, and is implicitly e
 ```js
 'use aro'
 
-const http = require('http')
+import {createServer} from 'http'
 
 main = fn (() => {
 
     // Create a fizzbuzz server to demo the idea of a main function.
 
-    http.createServer((req, res) => {
+    createServer((req, res) => {
         if (req.url === '/fizz') {
             res.end('buzz')
         } else {
@@ -99,11 +91,11 @@ main = fn (() => {
 })
 ```
 
-If defining a module that will be included and run by other code, ignore `main` and use the usual `module` and `exports` machinery.
+If defining a module that will be included and run by other code, ignore `main` and use the ESModules machinery as usual.
 
 ### Testing with `test`, `mock`, & `local`
 
-Tests are declared in sibling files using the `*.test.js` naming convention. Each test file is provided with the `module`, `exports`, and `local` variables from the source file that it is testing (values that are not exported can be accessed in tests via `local`). Here is an example file saved as ./foo.js, for which tests will be specified in ./foo.test.js (shown below):
+Tests are declared in sibling files using the `*.test.js` naming convention. Each test file implicitly imports the material that it tests using the `public` and `local` variables from the source file that it is testing (i.e., values that are not exported can be accessed in tests via `local`). Here is an example file saved as ./foo.js, for which tests will be specified in ./foo.test.js (shown below):
 
 ./foo.js:
 ```js
@@ -119,7 +111,7 @@ local.insertSpaces = fn (inputStr => {
     return inputStr.replace(/([A-Z]+)/g, ' $1')
 })
 
-exports.fromCamelCase = fn (inputStr => {
+export const fromCamelCase = fn (inputStr => {
 
     // Transforms a string from camel case to spaced lowercase case.
 
@@ -139,6 +131,8 @@ exports.fromCamelCase = fn (inputStr => {
 ```js
 'use aro'
 
+import assert from 'assert'
+
 test(done => {
 
     // Verify the space insertion function behavior.
@@ -154,7 +148,7 @@ test(done => {
     // Verify overall fromCamelCase transformation.
 
     const testInput = 'fooBarBaz'
-    const regularCase = exports.fromCamelCase(testInput)
+    const regularCase = public.fromCamelCase(testInput)
     assert.equal(regularCase, 'foo bar baz')
     done()
 })
@@ -162,22 +156,29 @@ test(done => {
 
 #### Mocking Functions
 
-The `mock` function is the most valuable tool provided by Aro. It renders the ordinarily harrowing task of setting up mocks as simple as one function call. Any function that has been defined with `fn` can be mocked inline, as shown below:
+The `mock` function is the most valuable tool provided by Aro. It renders the ordinarily harrowing task of setting up mocks as simple as one function call. Any function that has been defined with `fn` can be mocked inline, as shown below.
 
-Example ./bar.js:
+First, consider this example source file, at ./bar.js:
 ```js
 'use aro'
 
 local.randomHex = fn (ln => {
 
-    // Generate a random hex string.
+    // Generate a random hex string of the desired length.
+    // Note: Not crypto secure.
 
+    param   (ln)(Number)
+    precon  (() => ln < 20)
     returns (String)
 
-    return parseInt(Math.random().slice(2)).toString('hex').slice(0, ln)
+    const hex = (
+        Math.random().toString(16) + 
+        Math.random().toString(16)
+    )
+    return hex.slice(2, ln + 2)
 })
 
-exports.randomizeFname = fn (basename => {
+export const randomizeFname = fn (basename => {
 
     // Prepends a random hex string to the given basename.
 
@@ -188,36 +189,38 @@ exports.randomizeFname = fn (basename => {
 })
 ```
 
-Because the `randomHex` function is random, it will be useful to mock its output in order to make the behavior of `randomizeFname` predictable and thus testable.
+Notice that because the `randomHex` produces non-predictable output, it will be useful to mock it in order to make the behavior of `randomizeFname` predictable and therefore testable. Here is how that would be done within ./bar.test.js:
 
-Example ./bar.test.js:
 ```js
 'use aro'
 
+import assert from 'assert'
+
 test(done => {
 
-    // Mock the randomHex function.
-    mock(local.randomHex)(() => 'ff9a4113')
+    // Ensure that filenames can be randomized.
 
-    // Call the function we're testing, which uses randomHex.
-    const fname = exports.randomizeFname('foo.jpg')
-
-    assert.equal(fname, 'ff9a4113-foo.jpg')
-
+    mock(local.randomHex)(() => 'ffffffff')         // Create mock.
+    const fname = public.randomizeFname('foo.jpg')  // Call the function.
+    assert(fname === 'ffffffff-foo.jpg')            // Predictable result.
     done()
 })
 ```
 
+A mock persists for the duration of a single test; calling `done()` wipes out the mock, setting the function back its real value.
+
 ### Code Contracts
 
-Contracts are enforced (dev mode only) by the `precon` and `postcon` functions, which take functions that perform verification work before or after the business logic runs. For example:
+Contracts are enforced (development mode only) by the `precon` and `postcon` functions, which take functions that perform verification work before or after the business logic runs. For example:
 
 ```js
 'use aro'
 
-const fs = require('fs')
+import fs from 'fs'
 
 const read = fn (async conf => {
+
+    // Dummy function that reads either a dir or a file from disk.
 
     precon  (() => conf.file || conf.dir)     // Require .file or .dir prop...
     precon  (() => !(conf.file && conf.dir))  // ...but forbid both at same time.
@@ -227,7 +230,7 @@ const read = fn (async conf => {
     if (conf.file) {
         data = await fs.readFile(conf.file, conf.dataType).catch(() => '')
     } else {
-        data = await fs.readdirSync(conf.dir).catch(() => '')
+        data = await fs.readdir(conf.dir).catch(() => '')
         data = data.join(', ')
     }
     return data
@@ -236,12 +239,12 @@ const read = fn (async conf => {
 
 ### Type Checking
 
-Aro relies on the [Protocheck](https://github.com/jeffmcmahan/protocheck) library, and Aro's API directly exposes the composable higher-order types implemented by Protocheck as `global.types`. Type checks are implictly run on the inputs to the `param` and `returns` functions, as shown:
+Aro relies on the [Protocheck](https://github.com/jeffmcmahan/protocheck) library. Type checks are implictly run on the inputs to the `param` and `returns` functions, as shown:
 
 ```js
 'use aro'
 
-const main = fn (bar => {
+const foo = fn (bar => {
 
     param   (bar)(Number)
     returns (Number)
@@ -262,6 +265,16 @@ Protocheck implements simple types with semantics that keep to the type definiti
 * `Void` is a value of type `Null` or `Undefined`.
 * `Dictionary` is a null-prototype object (*i.e.,* `Object.create(null)`).
 
+#### Accessing Types
+
+Aro's directly exposes the composable higher-order types implemented by Protocheck as `global.types`. One can therefore access them by a simple destructuring assignment statement targeting `types`:
+
+```js
+'use aro'
+
+const {Maybe, Tuple, Void, U, T, ArrayT} = types
+```
+
 #### Union Types
 
 To declare a union type, pass a list of types to `U`.
@@ -275,7 +288,7 @@ This could be used as a parameter type check, for example, as shown:
 ```js
 'use aro'
 
-exports.convertIdToInt = fn (id => {
+export const convertIdToInt = fn (id => {
 
     param   (id)(U(String, Number))
     returns (Number)
@@ -309,7 +322,7 @@ Tuple(String, Number, Boolean)
 To declare a generic type, use the `T` function and pass it a value:
 
 ```js
-exports.fooFunc = fn (obj => {
+export const fooFunc = fn (obj => {
 
     param   (obj)(Object)
     returns (T(obj)) // Returns an object of the same type as obj.
@@ -335,7 +348,7 @@ Any type can be saved and reused:
 
 const Coordinate = Tuple(Number, Number)
 
-const distance = fn ((a, b)) => {
+const distance = fn ((a, b) => {
 
     // Get the distance between points a and b.
 
@@ -374,6 +387,8 @@ asyncIdentity(5) // pass
 
 ```js
 {
+    ...
+
     // Let ESLint know about the globals and locally given variables.
     "globals": {
         "main": true,
