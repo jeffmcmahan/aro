@@ -14,13 +14,26 @@ Once installed, in any JS file that will use the helpers, include the `'use aro'
 aro run development ./project-root --your-args
 ```
 
+The project root directory must be structured around a `src` directory containing an `index.js` file, as follows:
+
+```
+.
+├── package.json
+├── node_modules
+│   └── ...
+└── src
+    ├── index.js
+    ├── index.test.js
+    ├── foo.js
+    ├── foo.test.js
+    └── ...
+```
+
 Command line syntax is:
 
 ```bash
 aro [run|build] [development|production] ./project/root [--args]
 ```
-
-<small>N.b.: Aro assumes that your app's main file is called `index.js` and does not rely on `package.json` for anything.</small>
 
 ## Aro-Style Code
 
