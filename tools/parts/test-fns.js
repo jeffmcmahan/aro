@@ -1,6 +1,12 @@
 global.aro.testFns = (() => {
 	const test = f => state.tests.push(f)
-	const mock = f => mock => state.mocks.set(f.__inner__, mock)
+	const mock = f => {
+		if (!f || !f.__inner__) {
+			console.log(f)
+			throw new Error('Mock applies only to fn functions.')
+		}
+		return mock => state.mocks.set(f.__inner__, mock)
+	}
 	const runTests = () => {
 		let count = 0
 		const nextTest = () => {

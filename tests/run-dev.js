@@ -12,6 +12,7 @@ const output = sh('aro run development ./test-backend --dev-arg')
 
 // Examine stdout.
 assert(output.includes('tested: test'))
+assert(output.includes('tested: nested test'))
 assert(output.includes('Ran 4 tests.'))
 
 // Examine results.json.

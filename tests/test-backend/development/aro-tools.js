@@ -346,6 +346,7 @@ global.aro.testFns = (() => {
 	const runTests = () => {
 		let count = 0
 		const nextTest = () => {
+			console.log('test complete')
 			state.mocks.clear()
 			if (state.tests.length) {
 				count++

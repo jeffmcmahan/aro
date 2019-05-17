@@ -1,4 +1,4 @@
-const local = global.aro['/index.js']; const {test, mock} = global.aro.testFns; import * as src from './index.js'
+const local = global.aro['/index.js']; const {test, mock} = global.aro.testFns; import * as module from './index.js'
 
 import assert from 'assert'
 
@@ -15,7 +15,7 @@ test(done => {
 	// Aim: Make sure that the target file being tested is imported
 	// in this test file as "src".
 
-	assert.equal(typeof src, 'object') // In this its just a blank module.
+	assert.equal(typeof module, 'object') // In this its just a blank module.
 	done()
 })
 

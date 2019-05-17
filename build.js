@@ -1,4 +1,4 @@
-import {dirname, join} from 'path'
+import {dirname, join, basename} from 'path'
 import sh from './utils/sh.js'
 import {writeFile, readFile, stat, readdir} from './utils/fs.js'
 import generateTools from './tools/generate.js'
@@ -57,7 +57,7 @@ const prefix = (root, srcDir, outputDir, fname, content) => {
 		const id = relFname.slice(0, -8) + '.js'
 		prefixes.push(`const local = global.aro['${id}']`)
 		prefixes.push('const {test, mock} = global.aro.testFns')
-		prefixes.push(`import * as src from '.${id}'`)
+		prefixes.push(`import * as module from './${basename(id)}'`)
 	} else {
 		prefixes.push(`const local = global.aro['${relFname}']`)
 		if (isMain(root, fname)) {
@@ -126,7 +126,13 @@ export default async (mode, root) => {
 	await sh(`rm -rf ${outputDir} && mkdir ${outputDir}`).catch(log)
 
 	// Read files, transform if required, and save to outputDir.
-	const fnames = await read(srcDir)
+	let fnames = await read(srcDir)
+
+	// Remove test files if in production mode.
+	if (mode === 'production') {
+		fnames = fnames.filter(fname => !fname.endsWith('.test.js'))
+	}
+
 	await Promise.all(fnames.map(async fname => {
 		let content = await readFile(fname, 'utf8').catch(log)
 		content = prefix(root, srcDir, outputDir, fname, content)
