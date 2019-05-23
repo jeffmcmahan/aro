@@ -1,4 +1,4 @@
-global.fn = (() => {
+export const fn = (() => {
 	
 	const isAsync = f => /^async[\s\(]/.test(f.toString().trim())
 

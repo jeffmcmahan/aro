@@ -1,16 +1,3 @@
-var global = (1,eval)('this');if('window' in global){window.global=global}
-
-global.aro = {
-	main: () => {}
-};
-
-global.aro['/index.js'] = {};
-global.aro['/nested/test-nesting.js'] = {};
-global.aro['/package.json'] = {};
-global.aro['/test-param.js'] = {};
-global.aro['/test-postcon.js'] = {};
-global.aro['/test-precon.js'] = {};
-global.aro['/test-returns.js'] = {};
 const protocheck = (() => {
 
 	const hmac = '8972bac721df873b'
@@ -159,20 +146,26 @@ const protocheck = (() => {
 	return typeCheck
 })()
 
-global.types = protocheck.types;
+export const types =  protocheck.types;
 
 if (Error.stackTraceLimit < 100) {
 	Error.stackTraceLimit = 100
 };
 
-const state = global.aro.state = Object.freeze({
+const state = {
 	mocks: new Map,
 	callStack: [],
-	tests: [],
-	localVars: {} 
-});
+	tests: []
+};
 
-global.fn = (() => {
+export const __index__js = {};
+export const __nested__test__nesting__js = {};
+export const __package__json = {};
+export const __test__param__js = {};
+export const __test__postcon__js = {};
+export const __test__precon__js = {};
+export const __test__returns__js = {};
+export const fn = (() => {
 	
 	const isAsync = f => /^async[\s\(]/.test(f.toString().trim())
 
@@ -290,7 +283,7 @@ const error = (() => {
 	return {returnType, paramType}
 })()
 
-global.param = val => __Type => {
+export const param = val => __Type => {
 	if (!protocheck(val, __Type)) {
 		const {valueTypeName, expectedTypeName} = (
 			protocheck.failureDetail(val, __Type)
@@ -301,7 +294,7 @@ global.param = val => __Type => {
 	}
 }
 
-global.precon = f => {
+export const precon = f => {
 	const call = state.callStack.slice(-1)[0]
 	try {
 		if (!f()) {
@@ -317,7 +310,7 @@ global.precon = f => {
 	}
 }
 
-global.returns = __Type => {
+export const returns = __Type => {
 	state.callStack.slice(-1)[0].returns = val => {
 		if (!protocheck(val, __Type)) {
 			const {valueTypeName, expectedTypeName} = protocheck.failureDetail(val, __Type)
@@ -328,7 +321,7 @@ global.returns = __Type => {
 	}
 }
 
-global.postcon = f => {
+export const postcon = f => {
 	const call = state.callStack.slice(-1)[0]
 	const conditionCheck = returnVal => {
 		if (!f(returnVal)) {
@@ -340,24 +333,28 @@ global.postcon = f => {
 	state.callStack.slice(-1)[0].post.push(conditionCheck)
 };
 
-global.aro.testFns = (() => {
-	const test = f => state.tests.push(f)
-	const mock = f => mock => state.mocks.set(f.__inner__, mock)
-	const runTests = () => {
-		let count = 0
-		const nextTest = () => {
-			console.log('test complete')
-			state.mocks.clear()
-			if (state.tests.length) {
-				count++
-				const test = state.tests.shift()
-				test(nextTest)
-			} else {
-				console.log(`Ran ${count} tests.`)
-				global.aro.main()
-			}
-		}
-		nextTest()
+export const test = f => state.tests.push(f)
+
+export const mock = f => {
+	if (!f || !f.__inner__) {
+		console.log(f)
+		throw new Error('Mock applies only to fn functions.')
 	}
-	return {test, mock, runTests}
-})();
+	return mock => state.mocks.set(f.__inner__, mock)
+}
+
+export const runTests = main => {
+	let count = 0
+	const nextTest = () => {
+		state.mocks.clear()
+		if (state.tests.length) {
+			count++
+			const test = state.tests.shift()
+			test(nextTest)
+		} else {
+			console.log(`Ran ${count} tests.`)
+			main()
+		}
+	}
+	nextTest()
+};

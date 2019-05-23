@@ -1,6 +1,5 @@
-const state = global.aro.state = Object.freeze({
+const state = {
 	mocks: new Map,
 	callStack: [],
-	tests: [],
-	localVars: {} 
-})
+	tests: []
+}

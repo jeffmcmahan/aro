@@ -4,7 +4,6 @@ const fs = require('fs')
 const assert = require('assert').strict
 const sh = cmd => require('child_process').execSync(cmd).toString()
 
-// Clear JSON data.
 const jsonFile = __dirname + '/test-backend/production/results.json'
 
 // Run our test-app in dev mode.

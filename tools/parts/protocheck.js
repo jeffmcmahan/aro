@@ -146,4 +146,4 @@ const protocheck = (() => {
 	return typeCheck
 })()
 
-global.types = protocheck.types
+export const types =  protocheck.types

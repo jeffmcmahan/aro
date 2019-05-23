@@ -1,4 +1,4 @@
-const local = global.aro['/index.js']; let main = () => {}; import './aro-tools.js'
+import {types, fn, param, precon, returns, postcon, __index__js as local, runTests} from '/Users/jeff/dev/personal/aro/tests/test-backend/development/aro-tools.js'; let main = () => {}
 
 import {dirname} from 'path'
 import {writeFileSync} from 'fs'
@@ -45,6 +45,4 @@ main = fn (() => {
 	writeFileSync(dir + '/results.json', JSON.stringify(results, null, 2))
 })
 
-global.aro.main = main
-import './aro-tests.js'
-global.aro.testFns.runTests()
+import('./aro-tests.js').then(async ({defineTests}) => defineTests().then(() => runTests(main)))

@@ -1,4 +1,4 @@
-const local = global.aro['/index.js']; const {test, mock} = global.aro.testFns; import * as module from './index.js'
+import {types, test, mock, __index__js as local} from '/Users/jeff/dev/personal/aro/tests/test-backend/development/aro-tools.js'; import * as module from './index.js'
 
 import assert from 'assert'
 

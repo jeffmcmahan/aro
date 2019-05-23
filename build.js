@@ -1,7 +1,8 @@
 import {dirname, join, basename} from 'path'
 import sh from './utils/sh.js'
-import {writeFile, readFile, stat, readdir} from './utils/fs.js'
+import {writeFile, readFile, createWriteStream, createReadStream, stat, readdir} from './utils/fs.js'
 import generateTools from './tools/generate.js'
+import fileId from './utils/file-id.js'
 const log = console.log
 
 const isMain = (root, fname) => {
@@ -46,44 +47,53 @@ const removeCalls = content => {
 		.replace(/\bfn(\s*?)\(/g, '/*fn*/$1(')
 }
 
-const prefix = (root, srcDir, outputDir, fname, content) => {
+const addDevContext = (fname, isMain, isTest, toolsPath, id) => {
 
-	// Add definitions for local, main, and an import of the tools.
+	// Provides the import statements as: {prefix['import foo from ...', ...], postfix[]}.
 
-	const relFname = fname.slice(srcDir.length)
-	const isTest = fname.endsWith('.test.js')
-	const prefixes = []
-	if (isTest) {
-		const id = relFname.slice(0, -8) + '.js'
-		prefixes.push(`const local = global.aro['${id}']`)
-		prefixes.push('const {test, mock} = global.aro.testFns')
-		prefixes.push(`import * as module from './${basename(id)}'`)
-	} else {
-		prefixes.push(`const local = global.aro['${relFname}']`)
-		if (isMain(root, fname)) {
-			prefixes.push('let main = () => {}')
-			prefixes.push(`import './aro-tools.js'`)
-		}
+	let prefix = []
+	let postfix = []
+	if (isMain) { // index.js
+		prefix = [
+			`import {types, fn, param, precon, returns, postcon, ${id} as local, runTests} from '${toolsPath}'`,
+			'let main = () => {}',
+		]
+		postfix = [
+			'import(\'./aro-tests.js\').then(async ({defineTests}) => defineTests().then(() => runTests(main)))'
+		]
+	} else if (isTest) { // *.test.js
+		prefix = [
+			`import {types, test, mock, ${id} as local} from '${toolsPath}'`,
+			`import * as module from './${basename(fname.slice(0, -8)) + '.js'}'`
+		]
+	} else { // *.js
+		prefix = [
+			`import {types, fn, param, precon, returns, postcon, ${id} as local} from '${toolsPath}'`,
+		]
 	}
-	return content.replace(`'use aro'\n`, prefixes.join('; ') + '\n')
+	return {prefix, postfix}
 }
 
-const copyMain = (rootDir, fname, content) => {
+const addProdContext = (isMain, toolsPath) => {
 
-	// Add a statement to make main accessible from elsewhere.
+	// Provides the import statements as: {prefix['import foo from ...', ...], postfix[]}.
 
-	return isMain(rootDir, fname)
-		? (content + '\nglobal.aro.main = main') 
-		: content
-}
-
-const addTests = (rootDir, fname, content) => {
-
-	// Add a statement to include all the test files.
-
-	return isMain(rootDir, fname)
-		? content + `\nimport './aro-tests.js'\nglobal.aro.testFns.runTests()` 
-		: content
+	let prefix = []
+	let postfix = []
+	if (isMain) {
+		prefix = [
+			`import {types} from '${toolsPath}'`,
+			'const local = {}',
+			'let main = () => {}'
+		]
+		postfix = ['main()']
+	} else {
+		prefix = [
+			`import {types} from '${toolsPath}'`,
+			'const local = {}'
+		]
+	}
+	return {prefix, postfix}
 }
 
 const safelyWriteFile = async (outputFname, content) => {
@@ -91,7 +101,7 @@ const safelyWriteFile = async (outputFname, content) => {
 	// Write the given file to disk, ensuring that the parent dir
 	// exists beforehand.
 
-	await sh(`mkdir -p ${dirname(outputFname)}`).catch(log)
+	await sh(`mkdir -p "${dirname(outputFname)}"`).catch(log)
 	await writeFile(outputFname, content).catch(log)
 }
 
@@ -101,9 +111,10 @@ const createTestFile = (srcDir, outputDir, fnames) => {
 
 	const srcFnames = fnames.filter(fname => fname.endsWith('.test.js'))
 	const relativeFnames = srcFnames.map(fname => fname.slice(srcDir.length))
-	const importStatements = relativeFnames.map(fname => `import '.${fname}'`)
+	const importStatements = relativeFnames.map(fname => `import('.${fname}')`)
+	const code = `export const defineTests = () => Promise.all([\n${importStatements.join(',\n')}\n])`
 	const testsFname = join(outputDir, 'aro-tests.js')
-	return writeFile(testsFname, importStatements.join('\n')).catch(log)
+	return writeFile(testsFname, code).catch(log)
 }
 
 const createToolsFile = (fnames, srcDir, outputDir, mode) => {
@@ -115,6 +126,15 @@ const createToolsFile = (fnames, srcDir, outputDir, mode) => {
 	return writeFile(toolsFname, toolsCode).catch(log)
 }
 
+const cp = async (src, dest) => {
+
+	// Safely copy a single file from src to dest.
+	// Notice: Node's fs.copyFile() does not handle exotic filenames.
+
+	await sh(`mkdir -p "${dirname(dest)}"`).catch(log)
+	await sh(`cp "${src}" "${dest}" `)
+}
+
 export default async (mode, root) => {
 
 	// Modify then copy src files to the ./aro-dev and ./aro-prod directories.
@@ -123,7 +143,7 @@ export default async (mode, root) => {
 	const outputDir = join(root, mode)
 	
 	// Clear/create the output directory.
-	await sh(`rm -rf ${outputDir} && mkdir ${outputDir}`).catch(log)
+	await sh(`rm -rf "${outputDir}" && mkdir "${outputDir}"`).catch(log)
 
 	// Read files, transform if required, and save to outputDir.
 	let fnames = await read(srcDir)
@@ -134,18 +154,33 @@ export default async (mode, root) => {
 	}
 
 	await Promise.all(fnames.map(async fname => {
-		let content = await readFile(fname, 'utf8').catch(log)
-		content = prefix(root, srcDir, outputDir, fname, content)
-		content = copyMain(root, fname, content)
-		if (mode === 'development') {
-			content = addTests(root, fname, content)
-		} else {
-			content = removeCalls(content)
-			if (isMain(root, fname)) {
-				content += '\nglobal.aro.main()'
-			}
-		}
 		const outputFname = join(outputDir, fname.slice(root.length + 4))
+		
+		// If not js, just copy the file straight up.
+		if (!fname.endsWith('.js')) {
+			return cp(fname, outputFname).catch(console.log)
+		}
+		
+		// Read the file and determine what sort of file it is.
+		let content = await readFile(fname, 'utf8').catch(log)
+		const isAro = content.includes('\'use aro\'')
+		const _isMain = isMain(root, fname)
+		const _isTest = fname.endsWith('.test.js')
+		const id = fileId(fname.slice(srcDir.length))
+		
+		// Generate code to precede and follow the src code.
+		var prefix = []
+		var postfix = []
+		const toolsPath = join(outputDir, 'aro-tools.js')
+		if (isAro && mode === 'development') {
+			var {prefix, postfix} = addDevContext(fname, _isMain, _isTest, toolsPath, id)
+		} else if (isAro) {
+			var {prefix, postfix} = addProdContext(isMain, toolsPath)
+			content = removeCalls(content)
+		}
+		content = content.replace('\'use aro\'', prefix.join('; ')) + '\n' + postfix.join('; ')
+
+		// Write the JS file to its new location.
 		await safelyWriteFile(outputFname, content).catch(log)
 	}))
 

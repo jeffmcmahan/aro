@@ -4,7 +4,6 @@ const fs = require('fs')
 const assert = require('assert').strict
 const sh = cmd => require('child_process').execSync(cmd).toString()
 
-// Clear JSON data.
 const jsonFile = __dirname + '/test-backend/development/results.json'
 
 // Run our test-app in dev mode.
@@ -13,7 +12,7 @@ const output = sh('aro run development ./test-backend --dev-arg')
 // Examine stdout.
 assert(output.includes('tested: test'))
 assert(output.includes('tested: nested test'))
-assert(output.includes('Ran 4 tests.'))
+assert(output.includes('Ran 5 tests.'))
 
 // Examine results.json.
 const results = JSON.parse(fs.readFileSync(jsonFile))

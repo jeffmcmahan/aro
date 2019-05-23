@@ -1,4 +1,4 @@
-const local = global.aro['/test-returns.js']
+import {types} from '/Users/jeff/dev/personal/aro/tests/test-backend/production/aro-tools.js'; const local = {}; let main = () => {}
 
 export default /*fn*/ (num => {
 	
@@ -7,3 +7,4 @@ export default /*fn*/ (num => {
 
 	return 'tested: returns'
 })
+main()

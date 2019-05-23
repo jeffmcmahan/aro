@@ -1,4 +1,4 @@
-const local = global.aro['/index.js']; let main = () => {}; import './aro-tools.js'
+import {types} from '/Users/jeff/dev/personal/aro/tests/test-backend/production/aro-tools.js'; const local = {}; let main = () => {}
 
 import {dirname} from 'path'
 import {writeFileSync} from 'fs'
@@ -45,5 +45,4 @@ main = /*fn*/ (() => {
 	writeFileSync(dir + '/results.json', JSON.stringify(results, null, 2))
 })
 
-global.aro.main = main
-global.aro.main()
+main()

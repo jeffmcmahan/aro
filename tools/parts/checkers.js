@@ -54,7 +54,7 @@ const error = (() => {
 	return {returnType, paramType}
 })()
 
-global.param = val => __Type => {
+export const param = val => __Type => {
 	if (!protocheck(val, __Type)) {
 		const {valueTypeName, expectedTypeName} = (
 			protocheck.failureDetail(val, __Type)
@@ -65,7 +65,7 @@ global.param = val => __Type => {
 	}
 }
 
-global.precon = f => {
+export const precon = f => {
 	const call = state.callStack.slice(-1)[0]
 	try {
 		if (!f()) {
@@ -81,7 +81,7 @@ global.precon = f => {
 	}
 }
 
-global.returns = __Type => {
+export const returns = __Type => {
 	state.callStack.slice(-1)[0].returns = val => {
 		if (!protocheck(val, __Type)) {
 			const {valueTypeName, expectedTypeName} = protocheck.failureDetail(val, __Type)
@@ -92,7 +92,7 @@ global.returns = __Type => {
 	}
 }
 
-global.postcon = f => {
+export const postcon = f => {
 	const call = state.callStack.slice(-1)[0]
 	const conditionCheck = returnVal => {
 		if (!f(returnVal)) {

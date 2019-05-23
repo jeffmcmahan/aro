@@ -1,16 +1,3 @@
-var global = (1,eval)('this');if('window' in global){window.global=global}
-
-global.aro = {
-	main: () => {}
-};
-
-global.aro['/index.js'] = {};
-global.aro['/nested/test-nesting.js'] = {};
-global.aro['/package.json'] = {};
-global.aro['/test-param.js'] = {};
-global.aro['/test-postcon.js'] = {};
-global.aro['/test-precon.js'] = {};
-global.aro['/test-returns.js'] = {};
 const protocheck = (() => {
 
 	const hmac = '8972bac721df873b'
@@ -159,4 +146,4 @@ const protocheck = (() => {
 	return typeCheck
 })()
 
-global.types = protocheck.types;
+export const types =  protocheck.types;
