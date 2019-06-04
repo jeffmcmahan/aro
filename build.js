@@ -1,6 +1,6 @@
 import {dirname, join, basename} from 'path'
 import sh from './utils/sh.js'
-import {writeFile, readFile, createWriteStream, createReadStream, stat, readdir} from './utils/fs.js'
+import {writeFile, readFile, stat, readdir} from './utils/fs.js'
 import generateTools from './tools/generate.js'
 import fileId from './utils/file-id.js'
 const log = console.log
@@ -15,8 +15,8 @@ const isMain = (root, fname) => {
 
 const read = async dir => {
 
-	// Recursively reads the given directory and returns an array
-	// of absolute file paths (no directory paths).
+	// Recursively reads the given directory and returns an array of
+	// absolute file paths (no directory paths).
 
 	const items = (await readdir(dir))
 		.filter(f => !f.startsWith('.'))
@@ -49,17 +49,22 @@ const removeCalls = content => {
 
 const addDevContext = (fname, isMain, isTest, toolsPath, id) => {
 
-	// Provides the import statements as: {prefix['import foo from ...', ...], postfix[]}.
+	// Provides arrays of javascript statements to prepend and append to
+	// a file, to enable the tools and tests.
 
 	let prefix = []
 	let postfix = []
 	if (isMain) { // index.js
+		const tools = `types, fn, param, precon, returns, postcon, ${id} as local, runTests`
 		prefix = [
-			`import {types, fn, param, precon, returns, postcon, ${id} as local, runTests} from '${toolsPath}'`,
+			`new Function('this.ARO_ENV = \\'development\\'')()`,
+			`import {${tools}} from '${toolsPath}'`,
 			'let main = () => {}',
 		]
 		postfix = [
-			'import(\'./aro-tests.js\').then(async ({defineTests}) => defineTests().then(() => runTests(main)))'
+			'import(\'./aro-tests.js\')'+
+				'.then(async ({defineTests}) => defineTests()'+
+				'.then(() => runTests(main)))'
 		]
 	} else if (isTest) { // *.test.js
 		prefix = [
@@ -67,8 +72,9 @@ const addDevContext = (fname, isMain, isTest, toolsPath, id) => {
 			`import * as module from './${basename(fname.slice(0, -8)) + '.js'}'`
 		]
 	} else { // *.js
+		const tools = `types, fn, param, precon, returns, postcon, ${id} as local`
 		prefix = [
-			`import {types, fn, param, precon, returns, postcon, ${id} as local} from '${toolsPath}'`,
+			`import {${tools}} from '${toolsPath}'`,
 		]
 	}
 	return {prefix, postfix}
@@ -76,12 +82,14 @@ const addDevContext = (fname, isMain, isTest, toolsPath, id) => {
 
 const addProdContext = (isMain, toolsPath) => {
 
-	// Provides the import statements as: {prefix['import foo from ...', ...], postfix[]}.
+	// Provides arrays of javascript statements to prepend and append to
+	// a file, sensitive to whether it is the main file or not.
 
 	let prefix = []
 	let postfix = []
 	if (isMain) {
 		prefix = [
+			`new Function('this.ARO_ENV = \\'production\\'')()`,
 			`import {types} from '${toolsPath}'`,
 			'const local = {}',
 			'let main = () => {}'
@@ -111,8 +119,8 @@ const createTestFile = (srcDir, outputDir, fnames) => {
 
 	const srcFnames = fnames.filter(fname => fname.endsWith('.test.js'))
 	const relativeFnames = srcFnames.map(fname => fname.slice(srcDir.length))
-	const importStatements = relativeFnames.map(fname => `import('.${fname}')`)
-	const code = `export const defineTests = () => Promise.all([\n${importStatements.join(',\n')}\n])`
+	const imports = relativeFnames.map(fname => `import('.${fname}')`).join(',\n')
+	const code = `export const defineTests = () => Promise.all([\n${imports}\n])`
 	const testsFname = join(outputDir, 'aro-tests.js')
 	return writeFile(testsFname, code).catch(log)
 }
@@ -175,7 +183,7 @@ export default async (mode, root) => {
 		if (isAro && mode === 'development') {
 			var {prefix, postfix} = addDevContext(fname, _isMain, _isTest, toolsPath, id)
 		} else if (isAro) {
-			var {prefix, postfix} = addProdContext(isMain, toolsPath)
+			var {prefix, postfix} = addProdContext(_isMain, toolsPath)
 			content = removeCalls(content)
 		}
 		content = content.replace('\'use aro\'', prefix.join('; ')) + '\n' + postfix.join('; ')
@@ -185,6 +193,8 @@ export default async (mode, root) => {
 	}))
 
 	// Generate Aro-specific files that will be included.
-	await createTestFile(srcDir, outputDir, fnames).catch(log)
 	await createToolsFile(fnames, srcDir, outputDir, mode)
+	if (mode === 'development') {
+		await createTestFile(srcDir, outputDir, fnames).catch(log)
+	}
 }

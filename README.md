@@ -8,10 +8,10 @@ Aro adds metaprogramming helpers to modern JS code, chiefly to make it easy to (
 npm install aro -g
 ```
 
-Once installed, in any JS file that will use the helpers, include the `'use aro'` directive at the top. Then use Aro to run the project:
+Once installed, in any JS file that will use the helpers, include the `'use aro'` directive at the top. Then use Aro to build the development and production versions from the src directory:
 
 ```bash
-aro run development ./project-root --your-args
+aro ./project-root --your-args
 ```
 
 The project root directory must be structured around a `src` directory containing an `index.js` file, as follows:
@@ -27,12 +27,6 @@ The project root directory must be structured around a `src` directory containin
     ├── foo.js
     ├── foo.test.js
     └── ...
-```
-
-Command line syntax is:
-
-```bash
-aro [run|build] [development|production] ./project/root [--args]
 ```
 
 ## Aro-Style Code
@@ -108,7 +102,7 @@ If defining a module that will be included and run by other code, ignore `main` 
 
 ### Testing with `test`, `mock`, & `local`
 
-Tests are declared in sibling files using the `*.test.js` naming convention. Each test file implicitly imports the material that it tests using the `public` and `local` variables from the source file that it is testing (i.e., values that are not exported can be accessed in tests via `local`). Here is an example file saved as ./foo.js, for which tests will be specified in ./foo.test.js (shown below):
+Tests are declared in sibling files using the `*.test.js` naming convention. Each test file implicitly imports the material that it tests using the `module` and `local` variables from the source file that it is testing (*i.e.,* values that are not exported can be accessed in tests via `local`). Here is an example file saved as ./foo.js, for which tests will be specified in ./foo.test.js (shown below):
 
 ./foo.js:
 ```js
@@ -161,7 +155,7 @@ test(done => {
     // Verify overall fromCamelCase transformation.
 
     const testInput = 'fooBarBaz'
-    const regularCase = public.fromCamelCase(testInput)
+    const regularCase = module.fromCamelCase(testInput)
     assert.equal(regularCase, 'foo bar baz')
     done()
 })
